@@ -92,9 +92,9 @@ fn kill_entity() {
     let mut app = App::new();
     app.add_systems(Update, kill);
     let damagable_id = app.world.spawn(Health(0.)).id();
-    assert_eq!(app.world.query::<&Dead>().iter(&app.world).len(), 0);
+    assert!(app.world.get::<Dead>(damagable_id).is_none());
     app.update();
-    assert_eq!(app.world.query::<&Dead>().iter(&app.world).len(), 1);
+    assert!(app.world.get::<Dead>(damagable_id).is_some());
 }
 
 #[test]
@@ -103,5 +103,5 @@ fn do_not_kill_entity() {
     app.add_systems(Update, kill);
     let damagable_id = app.world.spawn(Health(1.)).id();
     app.update();
-    assert_eq!(app.world.query::<&Dead>().iter(&app.world).len(), 0);
+    assert!(app.world.get::<Dead>(damagable_id).is_none());
 }
