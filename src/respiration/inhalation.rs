@@ -21,6 +21,11 @@ pub struct BreathTaken {
     pub entity: Entity,
 }
 
+pub fn inhalation_plugin(app: &mut App) {
+    app.add_event::<BreathTaken>();
+    app.add_systems(FixedUpdate, inhalation);
+}
+
 pub fn inhalation(
     mut breathers: Query<(&mut Lungs, &EquippedTank)>,
     mut cylinders: Query<&mut DivingCylinder>,

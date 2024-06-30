@@ -58,7 +58,7 @@ pub fn diver_plugin(app: &mut App) {
         (
             player_control_velocity,
             fire_speargun.after(crate::update_cursor),
-            player_inhale.after(update_position),
+            player_inhale.before(inhalation).after(update_position),
         ),
     );
 }
