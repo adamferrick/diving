@@ -37,6 +37,7 @@ pub fn projectile_plugin(app: &mut App) {
 }
 
 pub fn projectile_hit(
+    mut commands: Commands,
     projectiles: Query<&Damage, With<Projectile>>,
     targets: Query<Entity, (With<Health>, Without<Dead>)>,
     mut hit_events: EventReader<ProjectileHit>,
@@ -51,6 +52,7 @@ pub fn projectile_hit(
                 target: target,
                 damage: damage.0,
             });
+            commands.entity(hit_event.projectile).despawn();
         }
     }
 }
