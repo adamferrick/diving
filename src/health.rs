@@ -15,17 +15,26 @@ pub struct DamageEvent(pub Entity, pub f32);
 
 pub fn health_plugin(app: &mut App) {
     app.add_event::<DamageEvent>();
-    app.add_systems(FixedUpdate, (
-        damage_health.after(projectile_collision),
-        kill.after(damage_health),
-    ));
+    app.add_systems(
+        FixedUpdate,
+        (
+            damage_health.after(projectile_collision),
+            kill.after(damage_health),
+        ),
+    );
 }
 
-pub fn damage_health(mut damagables: Query<&mut Health, Without<Dead>>, mut damage_events: EventReader<DamageEvent>) {
+pub fn damage_health(
+    mut damagables: Query<&mut Health, Without<Dead>>,
+    mut damage_events: EventReader<DamageEvent>,
+) {
     for damage_event in damage_events.read() {
         if let Ok(mut health) = damagables.get_mut(damage_event.0) {
             health.0 -= damage_event.1;
-            println!("damage dealt: {}, resulting health value: {}", damage_event.1, health.0);
+            println!(
+                "damage dealt: {}, resulting health value: {}",
+                damage_event.1, health.0
+            );
         }
     }
 }
@@ -33,8 +42,7 @@ pub fn damage_health(mut damagables: Query<&mut Health, Without<Dead>>, mut dama
 pub fn kill(mut commands: Commands, living: Query<(Entity, &Health), Without<Dead>>) {
     for (entity, health) in &living {
         if health.0 <= 0. {
-            commands.entity(entity)
-                .insert(Dead);
+            commands.entity(entity).insert(Dead);
             println!("killing entity");
         }
     }
