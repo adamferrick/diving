@@ -13,6 +13,17 @@ pub struct RectangularHitbox(pub Rectangle);
 #[derive(Component)]
 pub struct Obstacle;
 
+pub fn collision_plugin(app: &mut App) {
+    app.add_systems(Startup, spawn_obstacles);
+    app.add_systems(
+        FixedUpdate,
+        (
+            projectile_collision.after(update_position),
+            obstacle_collision.after(update_position),
+        ),
+    );
+}
+
 pub fn spawn_obstacles(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,

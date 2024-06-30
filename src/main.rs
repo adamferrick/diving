@@ -19,9 +19,9 @@ struct MainCamera;
 
 fn main() {
     App::new()
-        .add_plugins((DefaultPlugins, health_plugin))
+        .add_plugins((DefaultPlugins, health_plugin, collision_plugin))
         .init_resource::<CursorPosition>()
-        .add_systems(Startup, (spawn_camera, spawn_diver, spawn_obstacles))
+        .add_systems(Startup, (spawn_camera, spawn_diver))
         .add_systems(
             FixedUpdate,
             (
@@ -30,8 +30,6 @@ fn main() {
                 update_position
                     .before(fire_speargun)
                     .after(player_control_velocity),
-                obstacle_collision.after(update_position),
-                projectile_collision.after(update_position),
                 fire_speargun.after(update_cursor),
             ),
         )
