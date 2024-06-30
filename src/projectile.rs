@@ -38,7 +38,7 @@ pub fn projectile_plugin(app: &mut App) {
 
 pub fn projectile_hit(
     projectiles: Query<&Damage, With<Projectile>>,
-    targets: Query<Entity, With<Health>>,
+    targets: Query<Entity, (With<Health>, Without<Dead>)>,
     mut hit_events: EventReader<ProjectileHit>,
     mut damage_events: EventWriter<DamageEvent>,
 ) {
@@ -47,7 +47,10 @@ pub fn projectile_hit(
             projectiles.get(hit_event.projectile),
             targets.get(hit_event.target),
         ) {
-            damage_events.send(DamageEvent { target: target, damage: damage.0 });
+            damage_events.send(DamageEvent {
+                target: target,
+                damage: damage.0,
+            });
         }
     }
 }
