@@ -55,6 +55,18 @@ impl DiverBundle {
     }
 }
 
+pub fn diver_plugin(app: &mut App) {
+    app.add_systems(Startup, spawn_diver);
+    app.add_systems(
+        FixedUpdate,
+        (
+            player_control_velocity,
+            fire_speargun.after(crate::update_cursor),
+            player_inhale.after(update_position),
+        ),
+    );
+}
+
 pub fn spawn_diver(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
