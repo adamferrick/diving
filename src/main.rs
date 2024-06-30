@@ -3,6 +3,7 @@ use crate::diver::*;
 use crate::health::*;
 use crate::position::*;
 use crate::projectile::*;
+use crate::ui::*;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 
@@ -11,6 +12,7 @@ pub mod diver;
 pub mod health;
 pub mod position;
 pub mod projectile;
+pub mod ui;
 
 #[derive(Resource, Default)]
 pub struct CursorPosition(Vec2);
@@ -25,6 +27,7 @@ fn main() {
             health_plugin,
             collision_plugin,
             projectile_plugin,
+            ui_plugin,
         ))
         .init_resource::<CursorPosition>()
         .add_systems(Startup, (spawn_camera, spawn_diver))
