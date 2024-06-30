@@ -84,7 +84,7 @@ pub fn update_lungs_ui(
 ) {
     for mut text in &mut texts {
         if let Ok(lungs) = lungs_query.get_single() {
-            text.sections[0].value = format!("Lungs: {}%", lungs.proportion_remaining * 100.);
+            text.sections[0].value = format!("Lungs: {}%", lungs.amount_remaining * 100.);
         }
     }
 }

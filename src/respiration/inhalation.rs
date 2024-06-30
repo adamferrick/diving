@@ -3,7 +3,7 @@ use bevy::prelude::*;
 #[derive(Component)]
 pub struct DivingCylinder {
     pub capacity: f32,
-    pub proportion_remaining: f32,
+    pub amount_remaining: f32,
     pub proportion_of_oxygen: f32,
 }
 
@@ -13,7 +13,7 @@ pub struct EquippedTank(pub Entity);
 #[derive(Component)]
 pub struct Lungs {
     pub capacity: f32,
-    pub proportion_remaining: f32,
+    pub amount_remaining: f32,
 }
 
 #[derive(Event)]
@@ -29,11 +29,14 @@ pub fn inhalation(
     for breath in breaths.read() {
         if let Ok((mut lungs, equipped_tank_id)) = breathers.get_mut(breath.entity) {
             if let Ok(mut cylinder) = cylinders.get_mut(equipped_tank_id.0) {
-                let amount_breathed = (lungs.capacity * (1. - lungs.proportion_remaining))
-                    .min(cylinder.capacity * cylinder.proportion_remaining);
-                cylinder.proportion_remaining -= amount_breathed / cylinder.capacity;
-                lungs.proportion_remaining += amount_breathed / lungs.capacity;
-                println!("amount breathed: {}, tank proportion remaining: {}, lung proportion remaining: {}", amount_breathed, cylinder.proportion_remaining, lungs.proportion_remaining);
+                let amount_breathed =
+                    (lungs.capacity - lungs.amount_remaining).min(cylinder.amount_remaining);
+                cylinder.amount_remaining -= amount_breathed;
+                lungs.amount_remaining += amount_breathed;
+                println!(
+                    "amount breathed: {}, tank remaining: {}, lung remaining: {}",
+                    amount_breathed, cylinder.amount_remaining, lungs.amount_remaining
+                );
             }
         }
     }
@@ -48,7 +51,7 @@ fn fill_lungs() {
         .world
         .spawn(DivingCylinder {
             capacity: 100.,
-            proportion_remaining: 1.,
+            amount_remaining: 100.,
             proportion_of_oxygen: 0.21,
         })
         .id();
@@ -57,7 +60,7 @@ fn fill_lungs() {
         .spawn((
             Lungs {
                 capacity: 100.,
-                proportion_remaining: 0.5,
+                amount_remaining: 50.,
             },
             EquippedTank(cylinder_id),
         ))
@@ -70,10 +73,10 @@ fn fill_lungs() {
     app.update();
     // lungs proportion should be full
     let new_lungs = app.world.get::<Lungs>(breather_id).unwrap();
-    assert_eq!(new_lungs.proportion_remaining, 1.);
+    assert_eq!(new_lungs.amount_remaining, 100.);
     // cylinder proportion should be half empty
     let new_cylinder = app.world.get::<DivingCylinder>(cylinder_id).unwrap();
-    assert_eq!(new_cylinder.proportion_remaining, 0.5);
+    assert_eq!(new_cylinder.amount_remaining, 50.);
 }
 
 #[test]
@@ -85,7 +88,7 @@ fn fill_lungs_partial() {
         .world
         .spawn(DivingCylinder {
             capacity: 100.,
-            proportion_remaining: 0.5,
+            amount_remaining: 50.,
             proportion_of_oxygen: 0.21,
         })
         .id();
@@ -94,7 +97,7 @@ fn fill_lungs_partial() {
         .spawn((
             Lungs {
                 capacity: 100.,
-                proportion_remaining: 0.25,
+                amount_remaining: 25.,
             },
             EquippedTank(cylinder_id),
         ))
@@ -107,10 +110,10 @@ fn fill_lungs_partial() {
     app.update();
     // lungs proportion should be 3/4ths full
     let new_lungs = app.world.get::<Lungs>(breather_id).unwrap();
-    assert_eq!(new_lungs.proportion_remaining, 0.75);
+    assert_eq!(new_lungs.amount_remaining, 75.);
     // cylinder proportion should be empty
     let new_cylinder = app.world.get::<DivingCylinder>(cylinder_id).unwrap();
-    assert_eq!(new_cylinder.proportion_remaining, 0.);
+    assert_eq!(new_cylinder.amount_remaining, 0.);
 }
 
 #[test]
@@ -122,7 +125,7 @@ fn empty_cylinder() {
         .world
         .spawn(DivingCylinder {
             capacity: 100.,
-            proportion_remaining: 0.,
+            amount_remaining: 0.,
             proportion_of_oxygen: 0.21,
         })
         .id();
@@ -131,7 +134,7 @@ fn empty_cylinder() {
         .spawn((
             Lungs {
                 capacity: 100.,
-                proportion_remaining: 0.5,
+                amount_remaining: 50.,
             },
             EquippedTank(cylinder_id),
         ))
@@ -144,8 +147,8 @@ fn empty_cylinder() {
     app.update();
     // lungs proportion should unchanged
     let new_lungs = app.world.get::<Lungs>(breather_id).unwrap();
-    assert_eq!(new_lungs.proportion_remaining, 0.5);
+    assert_eq!(new_lungs.amount_remaining, 50.);
     // cylinder proportion still should be empty
     let new_cylinder = app.world.get::<DivingCylinder>(cylinder_id).unwrap();
-    assert_eq!(new_cylinder.proportion_remaining, 0.);
+    assert_eq!(new_cylinder.amount_remaining, 0.);
 }

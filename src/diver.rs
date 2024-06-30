@@ -45,7 +45,7 @@ impl DiverBundle {
             equipped_tank: EquippedTank(tank),
             lungs: Lungs {
                 capacity: DIVER_LUNG_CAPACITY,
-                proportion_remaining: DIVER_LUNG_PROPORTION_REMAINING,
+                amount_remaining: DIVER_LUNG_PROPORTION_REMAINING,
             },
         }
     }
@@ -79,7 +79,7 @@ pub fn spawn_diver(
     let cylinder_id = commands
         .spawn(DivingCylinder {
             capacity: DIVER_TANK_CAPACITY,
-            proportion_remaining: DIVER_TANK_PROPORTION_REMAINING,
+            amount_remaining: DIVER_TANK_PROPORTION_REMAINING,
             proportion_of_oxygen: DIVER_TANK_PROPORTION_OXYGEN,
         })
         .id();
