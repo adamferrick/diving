@@ -36,17 +36,13 @@ pub struct DiverBundle {
 }
 
 impl DiverBundle {
-    fn new() -> Self {
+    fn new(tank: Entity) -> Self {
         Self {
             diver: Diver,
             hitbox: RectangularHitbox(Rectangle::new(DIVER_WIDTH, DIVER_HEIGHT)),
             health: Health(100.),
             velocity: Velocity(Vec3::new(0., 0., 0.)),
-            equipped_tank: EquippedTank {
-                capacity: DIVER_TANK_CAPACITY,
-                proportion_remaining: DIVER_TANK_PROPORTION_REMAINING,
-                proportion_of_oxygen: DIVER_TANK_PROPORTION_OXYGEN,
-            },
+            equipped_tank: EquippedTank(tank),
             lungs: Lungs {
                 capacity: DIVER_LUNG_CAPACITY,
                 proportion_remaining: DIVER_LUNG_PROPORTION_REMAINING,
@@ -80,8 +76,16 @@ pub fn spawn_diver(
     let mesh_handle = meshes.add(mesh);
     let material_handle = materials.add(material);
 
+    let cylinder_id = commands
+        .spawn(DivingCylinder {
+            capacity: DIVER_TANK_CAPACITY,
+            proportion_remaining: DIVER_TANK_PROPORTION_REMAINING,
+            proportion_of_oxygen: DIVER_TANK_PROPORTION_OXYGEN,
+        })
+        .id();
+
     commands.spawn((
-        DiverBundle::new(),
+        DiverBundle::new(cylinder_id),
         MaterialMesh2dBundle {
             mesh: mesh_handle.into(),
             material: material_handle,
@@ -160,8 +164,11 @@ fn did_fire_speargun() {
     let mut app = App::new();
     app.add_systems(Update, fire_speargun);
 
-    app.world
-        .spawn((DiverBundle::new(), Transform::from_translation(Vec3::ZERO)));
+    app.world.spawn((
+        Diver,
+        Velocity(Vec3::ZERO),
+        Transform::from_translation(Vec3::ZERO),
+    ));
 
     app.insert_resource(CursorPosition(Vec2::ONE));
     let mut mouse = ButtonInput::<MouseButton>::default();
