@@ -86,3 +86,22 @@ pub fn kill(mut commands: Commands, living: Query<(Entity, &Health), Without<Dea
         }
     }
 }
+
+#[test]
+fn kill_entity() {
+    let mut app = App::new();
+    app.add_systems(Update, kill);
+    let damagable_id = app.world.spawn(Health(0.)).id();
+    assert_eq!(app.world.query::<&Dead>().iter(&app.world).len(), 0);
+    app.update();
+    assert_eq!(app.world.query::<&Dead>().iter(&app.world).len(), 1);
+}
+
+#[test]
+fn do_not_kill_entity() {
+    let mut app = App::new();
+    app.add_systems(Update, kill);
+    let damagable_id = app.world.spawn(Health(1.)).id();
+    app.update();
+    assert_eq!(app.world.query::<&Dead>().iter(&app.world).len(), 0);
+}
