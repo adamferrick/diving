@@ -1,3 +1,4 @@
+use crate::collision::*;
 use bevy::prelude::*;
 
 #[derive(Component)]
@@ -11,6 +12,14 @@ pub struct Dead;
 
 #[derive(Event)]
 pub struct DamageEvent(pub Entity, pub f32);
+
+pub fn health_plugin(app: &mut App) {
+    app.add_event::<DamageEvent>();
+    app.add_systems(FixedUpdate, (
+        damage_health.after(projectile_collision),
+        kill.after(damage_health),
+    ));
+}
 
 pub fn damage_health(mut damagables: Query<&mut Health, Without<Dead>>, mut damage_events: EventReader<DamageEvent>) {
     for damage_event in damage_events.read() {
