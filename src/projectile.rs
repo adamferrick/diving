@@ -56,3 +56,56 @@ pub fn projectile_hit(
         }
     }
 }
+
+#[test]
+fn hit_target() {
+    let mut app = App::new();
+    app.add_event::<ProjectileHit>();
+    app.add_event::<DamageEvent>();
+    app.add_systems(Update, projectile_hit);
+    const DAMAGE: f32 = 5.;
+    let projectile_id = app.world.spawn((Projectile, Damage(DAMAGE))).id();
+    let target_id = app.world.spawn((Health(10.),)).id();
+    // Send hit event
+    app.world
+        .resource_mut::<Events<ProjectileHit>>()
+        .send(ProjectileHit {
+            projectile: projectile_id,
+            target: target_id,
+        });
+    app.update();
+    let damage_events = app.world.resource::<Events<DamageEvent>>();
+    let mut damage_reader = damage_events.get_reader();
+    let damage = damage_reader.read(damage_events).next().unwrap();
+    // Should have sent a DamageEvent { target: target_id, damage: DAMAGE }
+    assert_eq!(damage.target, target_id);
+    assert_eq!(damage.damage, DAMAGE);
+    // Projectile should have despawned
+    assert_eq!(app.world.query::<&Projectile>().iter(&app.world).len(), 0);
+}
+
+#[test]
+fn do_not_hit_dead_target() {
+    let mut app = App::new();
+    app.add_event::<ProjectileHit>();
+    app.add_event::<DamageEvent>();
+    app.add_systems(Update, projectile_hit);
+    const DAMAGE: f32 = 5.;
+    let projectile_id = app.world.spawn((Projectile, Damage(DAMAGE))).id();
+    let target_id = app.world.spawn((Health(0.), Dead)).id();
+    // Send hit event
+    app.world
+        .resource_mut::<Events<ProjectileHit>>()
+        .send(ProjectileHit {
+            projectile: projectile_id,
+            target: target_id,
+        });
+    app.update();
+    let damage_events = app.world.resource::<Events<DamageEvent>>();
+    let mut damage_reader = damage_events.get_reader();
+    let damage = damage_reader.read(damage_events).next();
+    // Should be no damage events
+    assert!(damage.is_none());
+    // Projectile should not have despawned
+    assert_eq!(app.world.query::<&Projectile>().iter(&app.world).len(), 1);
+}
