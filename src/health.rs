@@ -42,6 +42,42 @@ pub fn damage_health(
     }
 }
 
+#[test]
+fn did_damage() {
+    let mut app = App::new();
+    app.add_event::<DamageEvent>();
+    app.add_systems(Update, damage_health);
+    let damagable_id = app.world.spawn(Health(10.)).id();
+    // send damage event
+    app.world
+        .resource_mut::<Events<DamageEvent>>()
+        .send(DamageEvent {
+            target: damagable_id,
+            damage: 5.,
+        });
+    app.update();
+    let new_health = app.world.get::<Health>(damagable_id).unwrap().0;
+    assert_eq!(new_health, 5.);
+}
+
+#[test]
+fn dont_damage_dead() {
+    let mut app = App::new();
+    app.add_event::<DamageEvent>();
+    app.add_systems(Update, damage_health);
+    let damagable_id = app.world.spawn((Health(0.), Dead)).id();
+    // send damage event
+    app.world
+        .resource_mut::<Events<DamageEvent>>()
+        .send(DamageEvent {
+            target: damagable_id,
+            damage: 5.,
+        });
+    app.update();
+    let new_health = app.world.get::<Health>(damagable_id).unwrap().0;
+    assert_eq!(new_health, 0.);
+}
+
 pub fn kill(mut commands: Commands, living: Query<(Entity, &Health), Without<Dead>>) {
     for (entity, health) in &living {
         if health.0 <= 0. {
