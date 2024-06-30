@@ -34,6 +34,7 @@ fn main() {
                 obstacle_collision.after(update_position),
                 projectile_collision.after(update_position),
                 damage_health.after(projectile_collision),
+                kill.after(damage_health),
                 fire_speargun.after(update_cursor),
             ),
         )
