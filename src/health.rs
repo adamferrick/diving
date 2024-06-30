@@ -1,4 +1,4 @@
-use crate::collision::*;
+use crate::projectile::*;
 use bevy::prelude::*;
 
 #[derive(Component)]
@@ -18,7 +18,7 @@ pub fn health_plugin(app: &mut App) {
     app.add_systems(
         FixedUpdate,
         (
-            damage_health.after(projectile_collision),
+            damage_health.after(projectile_hit),
             kill.after(damage_health),
         ),
     );

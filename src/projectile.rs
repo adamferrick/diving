@@ -6,6 +6,12 @@ use bevy::prelude::*;
 #[derive(Component)]
 pub struct Projectile;
 
+#[derive(Event)]
+pub struct ProjectileHit {
+    pub projectile: Entity,
+    pub target: Entity,
+}
+
 #[derive(Bundle)]
 pub struct ProjectileBundle {
     damage: Damage,
@@ -21,6 +27,27 @@ impl ProjectileBundle {
             hitbox: RectangularHitbox(Rectangle::new(width, height)),
             projectile: Projectile,
             velocity: Velocity(Vec3::new(dx, dy, 0.)),
+        }
+    }
+}
+
+pub fn projectile_plugin(app: &mut App) {
+    app.add_event::<ProjectileHit>();
+    app.add_systems(FixedUpdate, projectile_hit.after(projectile_collision));
+}
+
+pub fn projectile_hit(
+    projectiles: Query<&Damage, With<Projectile>>,
+    targets: Query<Entity, With<Health>>,
+    mut hit_events: EventReader<ProjectileHit>,
+    mut damage_events: EventWriter<DamageEvent>,
+) {
+    for hit_event in hit_events.read() {
+        if let (Ok(damage), Ok(target)) = (
+            projectiles.get(hit_event.projectile),
+            targets.get(hit_event.target),
+        ) {
+            damage_events.send(DamageEvent(target, damage.0));
         }
     }
 }

@@ -2,6 +2,7 @@ use crate::collision::*;
 use crate::diver::*;
 use crate::health::*;
 use crate::position::*;
+use crate::projectile::*;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 
@@ -19,7 +20,12 @@ struct MainCamera;
 
 fn main() {
     App::new()
-        .add_plugins((DefaultPlugins, health_plugin, collision_plugin))
+        .add_plugins((
+            DefaultPlugins,
+            health_plugin,
+            collision_plugin,
+            projectile_plugin,
+        ))
         .init_resource::<CursorPosition>()
         .add_systems(Startup, (spawn_camera, spawn_diver))
         .add_systems(

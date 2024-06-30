@@ -204,19 +204,22 @@ pub fn obstacle_collision(
 }
 
 pub fn projectile_collision(
-    projectiles: Query<(&Transform, &RectangularHitbox, &Damage), With<Projectile>>,
-    damagables: Query<(Entity, &Transform, &RectangularHitbox), With<Health>>,
-    mut damage_event: EventWriter<DamageEvent>,
+    projectiles: Query<(Entity, &Transform, &RectangularHitbox), With<Projectile>>,
+    targets: Query<(Entity, &Transform, &RectangularHitbox), With<Health>>,
+    mut hit_event: EventWriter<ProjectileHit>,
 ) {
-    for (projectile_transform, projectile_hitbox, damage) in &projectiles {
-        for (damagable_entity, damagable_transform, damagable_hitbox) in &damagables {
+    for (projectile_entity, projectile_transform, projectile_hitbox) in &projectiles {
+        for (target_entity, target_transform, target_hitbox) in &targets {
             if let Some(_) = get_collision_data(
                 &projectile_transform.translation,
                 &projectile_hitbox,
-                &damagable_transform.translation,
-                &damagable_hitbox,
+                &target_transform.translation,
+                &target_hitbox,
             ) {
-                damage_event.send(DamageEvent(damagable_entity, damage.0));
+                hit_event.send(ProjectileHit {
+                    projectile: projectile_entity,
+                    target: target_entity,
+                });
             }
         }
     }
