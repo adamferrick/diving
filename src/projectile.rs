@@ -47,7 +47,7 @@ pub fn projectile_hit(
             projectiles.get(hit_event.projectile),
             targets.get(hit_event.target),
         ) {
-            damage_events.send(DamageEvent(target, damage.0));
+            damage_events.send(DamageEvent { target: target, damage: damage.0 });
         }
     }
 }

@@ -11,7 +11,10 @@ pub struct Damage(pub f32);
 pub struct Dead;
 
 #[derive(Event)]
-pub struct DamageEvent(pub Entity, pub f32);
+pub struct DamageEvent {
+    pub target: Entity,
+    pub damage: f32,
+}
 
 pub fn health_plugin(app: &mut App) {
     app.add_event::<DamageEvent>();
@@ -29,11 +32,11 @@ pub fn damage_health(
     mut damage_events: EventReader<DamageEvent>,
 ) {
     for damage_event in damage_events.read() {
-        if let Ok(mut health) = damagables.get_mut(damage_event.0) {
-            health.0 -= damage_event.1;
+        if let Ok(mut health) = damagables.get_mut(damage_event.target) {
+            health.0 -= damage_event.damage;
             println!(
                 "damage dealt: {}, resulting health value: {}",
-                damage_event.1, health.0
+                damage_event.damage, health.0
             );
         }
     }
