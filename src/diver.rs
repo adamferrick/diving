@@ -2,6 +2,7 @@ use crate::collision::*;
 use crate::health::*;
 use crate::position::*;
 use crate::projectile::*;
+use crate::respiration::inhalation::*;
 use crate::CursorPosition;
 use bevy::prelude::*;
 use bevy::sprite::MaterialMesh2dBundle;
@@ -13,8 +14,13 @@ const DIVER_HEIGHT: f32 = 20.;
 const SPEAR_SIZE: f32 = 5.;
 const SPEAR_INITIAL_VELOCITY: f32 = 5.;
 const SPEAR_DAMAGE: f32 = 40.;
-
 const SPEAR_FIRE_RADIUS: f32 = 40.;
+
+const DIVER_TANK_CAPACITY: f32 = 1000.;
+const DIVER_TANK_PROPORTION_REMAINING: f32 = 0.8;
+const DIVER_TANK_PROPORTION_OXYGEN: f32 = 0.21;
+const DIVER_LUNG_CAPACITY: f32 = 100.;
+const DIVER_LUNG_PROPORTION_REMAINING: f32 = 0.5;
 
 #[derive(Component)]
 pub struct Diver;
@@ -25,6 +31,8 @@ pub struct DiverBundle {
     hitbox: RectangularHitbox,
     health: Health,
     velocity: Velocity,
+    equipped_tank: EquippedTank,
+    lungs: Lungs,
 }
 
 impl DiverBundle {
@@ -34,6 +42,15 @@ impl DiverBundle {
             hitbox: RectangularHitbox(Rectangle::new(DIVER_WIDTH, DIVER_HEIGHT)),
             health: Health(100.),
             velocity: Velocity(Vec3::new(0., 0., 0.)),
+            equipped_tank: EquippedTank {
+                capacity: DIVER_TANK_CAPACITY,
+                proportion_remaining: DIVER_TANK_PROPORTION_REMAINING,
+                proportion_of_oxygen: DIVER_TANK_PROPORTION_OXYGEN,
+            },
+            lungs: Lungs {
+                capacity: DIVER_LUNG_CAPACITY,
+                proportion_remaining: DIVER_LUNG_PROPORTION_REMAINING,
+            },
         }
     }
 }
@@ -159,4 +176,18 @@ fn did_fire_speargun() {
     app.update();
     // should still be one projectile
     assert_eq!(app.world.query::<&Projectile>().iter(&app.world).len(), 1);
+}
+
+pub fn player_inhale(
+    buttons: Res<ButtonInput<KeyCode>>,
+    diver: Query<Entity, With<Diver>>,
+    mut breaths: EventWriter<BreathTaken>,
+) {
+    if let Ok(diver_entity) = diver.get_single() {
+        if buttons.just_pressed(KeyCode::Space) {
+            breaths.send(BreathTaken {
+                entity: diver_entity,
+            });
+        }
+    }
 }

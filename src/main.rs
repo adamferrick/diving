@@ -3,6 +3,7 @@ use crate::diver::*;
 use crate::health::*;
 use crate::position::*;
 use crate::projectile::*;
+use crate::respiration::*;
 use crate::ui::*;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
@@ -12,6 +13,7 @@ pub mod diver;
 pub mod health;
 pub mod position;
 pub mod projectile;
+pub mod respiration;
 pub mod ui;
 
 #[derive(Resource, Default)]
@@ -27,6 +29,7 @@ fn main() {
             health_plugin,
             collision_plugin,
             projectile_plugin,
+            respiration_plugin,
             ui_plugin,
         ))
         .init_resource::<CursorPosition>()
@@ -40,6 +43,7 @@ fn main() {
                     .before(fire_speargun)
                     .after(player_control_velocity),
                 fire_speargun.after(update_cursor),
+                player_inhale.after(update_position),
             ),
         )
         .run();
