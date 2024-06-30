@@ -17,10 +17,10 @@ const SPEAR_DAMAGE: f32 = 40.;
 const SPEAR_FIRE_RADIUS: f32 = 40.;
 
 const DIVER_TANK_CAPACITY: f32 = 1000.;
-const DIVER_TANK_PROPORTION_REMAINING: f32 = 0.8;
-const DIVER_TANK_PROPORTION_OXYGEN: f32 = 0.21;
+const DIVER_TANK_AMOUNT_REMAINING: f32 = 800.;
+const DIVER_TANK_AMOUNT_OXYGEN: f32 = 0.21;
 const DIVER_LUNG_CAPACITY: f32 = 100.;
-const DIVER_LUNG_PROPORTION_REMAINING: f32 = 0.5;
+const DIVER_LUNG_AMOUNT_REMAINING: f32 = 50.;
 
 #[derive(Component)]
 pub struct Diver;
@@ -45,7 +45,7 @@ impl DiverBundle {
             equipped_tank: EquippedTank(tank),
             lungs: Lungs {
                 capacity: DIVER_LUNG_CAPACITY,
-                amount_remaining: DIVER_LUNG_PROPORTION_REMAINING,
+                amount_remaining: DIVER_LUNG_AMOUNT_REMAINING,
             },
         }
     }
@@ -79,8 +79,8 @@ pub fn spawn_diver(
     let cylinder_id = commands
         .spawn(DivingCylinder {
             capacity: DIVER_TANK_CAPACITY,
-            amount_remaining: DIVER_TANK_PROPORTION_REMAINING,
-            proportion_of_oxygen: DIVER_TANK_PROPORTION_OXYGEN,
+            amount_remaining: DIVER_TANK_AMOUNT_REMAINING,
+            proportion_of_oxygen: DIVER_TANK_AMOUNT_OXYGEN,
         })
         .id();
 
