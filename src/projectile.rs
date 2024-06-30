@@ -2,9 +2,18 @@ use crate::collision::*;
 use crate::health::*;
 use crate::position::*;
 use bevy::prelude::*;
+use bevy::sprite::MaterialMesh2dBundle;
 
 #[derive(Component)]
 pub struct Projectile;
+
+#[derive(Event)]
+pub struct FireProjectile {
+    pub translation: Vec3,
+    pub velocity: Vec3,
+    pub dims: Rectangle,
+    pub damage: f32,
+}
 
 #[derive(Event)]
 pub struct ProjectileHit {
@@ -21,19 +30,90 @@ pub struct ProjectileBundle {
 }
 
 impl ProjectileBundle {
-    pub fn new(damage: f32, width: f32, height: f32, dx: f32, dy: f32) -> Self {
+    pub fn new(damage: f32, dims: Rectangle, velocity: Vec3) -> Self {
         Self {
             damage: Damage(damage),
-            hitbox: RectangularHitbox(Rectangle::new(width, height)),
+            hitbox: RectangularHitbox(dims),
             projectile: Projectile,
-            velocity: Velocity(Vec3::new(dx, dy, 0.)),
+            velocity: Velocity(velocity),
         }
     }
 }
 
 pub fn projectile_plugin(app: &mut App) {
+    app.add_event::<FireProjectile>();
     app.add_event::<ProjectileHit>();
-    app.add_systems(FixedUpdate, projectile_hit.after(projectile_collision));
+    app.add_systems(
+        FixedUpdate,
+        (projectile_hit.after(projectile_collision), fire_projectile),
+    );
+}
+
+pub fn fire_projectile(
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+    mut fire_events: EventReader<FireProjectile>,
+) {
+    for fire_event in fire_events.read() {
+        let shape = Mesh::from(fire_event.dims);
+        let color = ColorMaterial::from(Color::rgb(1., 0., 0.));
+        let mesh_handle = meshes.add(shape);
+        let material_handle = materials.add(color);
+        println!(
+            "firing projectile. position: {}, velocity: {}",
+            fire_event.translation, fire_event.velocity
+        );
+        commands.spawn((
+            ProjectileBundle::new(fire_event.damage, fire_event.dims, fire_event.velocity),
+            MaterialMesh2dBundle {
+                mesh: mesh_handle.into(),
+                material: material_handle,
+                transform: Transform::from_translation(fire_event.translation),
+                ..default()
+            },
+        ));
+    }
+}
+
+#[test]
+fn did_fire_projectile() {
+    let mut app = App::new();
+    app.add_event::<FireProjectile>();
+    app.add_systems(Update, fire_projectile);
+    app.world.insert_resource(Assets::<Mesh>::default());
+    app.world
+        .insert_resource(Assets::<ColorMaterial>::default());
+    app.world
+        .resource_mut::<Events<FireProjectile>>()
+        .send(FireProjectile {
+            translation: Vec3::ZERO,
+            velocity: Vec3::ONE,
+            dims: Rectangle::new(1., 1.),
+            damage: 1.,
+        });
+    app.update();
+    // should be one projectile
+    assert!(app
+        .world
+        .query::<&Projectile>()
+        .get_single(&app.world)
+        .is_ok());
+    let (damage, hitbox, velocity, transform, _) = app
+        .world
+        .query::<(
+            &Damage,
+            &RectangularHitbox,
+            &Velocity,
+            &Transform,
+            &Projectile,
+        )>()
+        .single(&app.world);
+    // should have the values sent
+    assert_eq!(damage.0, 1.);
+    assert_eq!(hitbox.0, Rectangle::new(1., 1.));
+    assert_eq!(velocity.0, Vec3::ONE);
+    assert_eq!(transform.translation, Vec3::ZERO);
 }
 
 pub fn projectile_hit(

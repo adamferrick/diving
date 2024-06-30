@@ -57,7 +57,9 @@ pub fn diver_plugin(app: &mut App) {
         FixedUpdate,
         (
             player_control_velocity,
-            fire_speargun.after(crate::update_cursor),
+            fire_speargun
+                .before(fire_projectile)
+                .after(crate::update_cursor),
             player_inhale.before(inhalation).after(update_position),
         ),
     );
@@ -119,41 +121,26 @@ pub fn player_control_velocity(
 }
 
 pub fn fire_speargun(
-    mut commands: Commands,
     buttons: Res<ButtonInput<MouseButton>>,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
     cursor_position: Res<CursorPosition>,
     diver: Query<(&Transform, &Velocity), With<Diver>>,
+    mut fire_events: EventWriter<FireProjectile>,
 ) {
     if let Ok((transform, velocity)) = diver.get_single() {
         if buttons.just_pressed(MouseButton::Left) {
             let diver_position = Vec2::new(transform.translation.x, transform.translation.y);
             if let Some(direction) = (cursor_position.0 - diver_position).try_normalize() {
-                let shape = Mesh::from(Circle::new(SPEAR_SIZE));
-                let color = ColorMaterial::from(Color::rgb(1., 0., 0.));
-                let mesh_handle = meshes.add(shape);
-                let material_handle = materials.add(color);
                 let spawn_position = diver_position + SPEAR_FIRE_RADIUS * direction;
-                commands.spawn((
-                    ProjectileBundle::new(
-                        SPEAR_DAMAGE,
-                        SPEAR_SIZE,
-                        SPEAR_SIZE,
+                fire_events.send(FireProjectile {
+                    translation: Vec3::new(spawn_position.x, spawn_position.y, 0.),
+                    velocity: Vec3::new(
                         direction.x * SPEAR_INITIAL_VELOCITY + velocity.0.x,
                         direction.y * SPEAR_INITIAL_VELOCITY + velocity.0.y,
+                        0.,
                     ),
-                    MaterialMesh2dBundle {
-                        mesh: mesh_handle.into(),
-                        material: material_handle,
-                        transform: Transform::from_translation(Vec3::new(
-                            spawn_position.x,
-                            spawn_position.y,
-                            0.,
-                        )),
-                        ..default()
-                    },
-                ));
+                    dims: Rectangle::new(SPEAR_SIZE, SPEAR_SIZE),
+                    damage: SPEAR_DAMAGE,
+                });
             }
         }
     }
@@ -163,6 +150,7 @@ pub fn fire_speargun(
 fn did_fire_speargun() {
     let mut app = App::new();
     app.add_systems(Update, fire_speargun);
+    app.add_event::<FireProjectile>();
 
     app.world.spawn((
         Diver,
@@ -175,26 +163,17 @@ fn did_fire_speargun() {
     mouse.press(MouseButton::Left);
     app.insert_resource(mouse);
 
-    app.insert_resource(Assets::<Mesh>::default());
-    app.insert_resource(Assets::<ColorMaterial>::default());
-
     app.update();
-    // should be one projectile
-    assert_eq!(app.world.query::<&Projectile>().iter(&app.world).len(), 1);
-    let (velocity, _) = app
-        .world
-        .query::<(&Velocity, &Projectile)>()
-        .single(&app.world);
-    // should be traveling at a 45deg angle
-    assert_eq!(
-        velocity.0,
-        SPEAR_INITIAL_VELOCITY * Vec3::new(1., 1., 0.).normalize(),
-    );
+    // should have sent an event
+    let speargun_fire_events = app.world.resource::<Events<FireProjectile>>();
+    let reader = speargun_fire_events.get_reader();
+    assert!(!reader.is_empty(speargun_fire_events));
 
     app.world.resource_mut::<ButtonInput<MouseButton>>().clear();
     app.update();
-    // should still be one projectile
-    assert_eq!(app.world.query::<&Projectile>().iter(&app.world).len(), 1);
+    // should not have sent an event
+    let speargun_fire_events = app.world.resource::<Events<FireProjectile>>();
+    assert_eq!(speargun_fire_events.len(), 1);
 }
 
 pub fn player_inhale(
