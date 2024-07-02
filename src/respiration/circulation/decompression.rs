@@ -10,7 +10,10 @@ pub struct InertGasInBloodstream(pub f32);
 pub struct SafeOutgassingAmount(pub f32);
 
 #[derive(Event)]
-pub struct BloodstreamOutgassing(pub f32);
+pub struct BloodstreamOutgassing {
+    pub entity: Entity,
+    pub amount: f32,
+}
 
 pub fn decompression_plugin(app: &mut App) {
     app.add_event::<BloodstreamOutgassing>();
@@ -18,12 +21,12 @@ pub fn decompression_plugin(app: &mut App) {
 }
 
 pub fn absorbing_and_outgassing(
-    mut breathers: Query<(&Depth, &mut InertGasInBloodstream, &Lungs)>,
+    mut breathers: Query<(Entity, &Depth, &mut InertGasInBloodstream, &Lungs)>,
     mut gases_to_circulate: EventReader<CirculateGas>,
     mut bloodstream_outgassing: EventWriter<BloodstreamOutgassing>,
 ) {
     for gas_to_circulate in gases_to_circulate.read() {
-        if let Ok((depth, mut inert_gas_in_bloodstream, lungs)) =
+        if let Ok((entity, depth, mut inert_gas_in_bloodstream, lungs)) =
             breathers.get_mut(gas_to_circulate.entity)
         {
             let delta =
@@ -31,7 +34,10 @@ pub fn absorbing_and_outgassing(
             inert_gas_in_bloodstream.0 += delta;
             println!("inert gas in bloodstream: {}", inert_gas_in_bloodstream.0);
             if delta < 0. {
-                bloodstream_outgassing.send(BloodstreamOutgassing(-delta));
+                bloodstream_outgassing.send(BloodstreamOutgassing {
+                    entity: entity,
+                    amount: -delta,
+                });
             }
         }
     }
@@ -152,7 +158,8 @@ fn outgas_full_breath() {
         .read(bloodstream_outgassing_events)
         .next()
         .unwrap();
-    assert_eq!(bloodstream_outgassing.0, 100.);
+    assert_eq!(bloodstream_outgassing.entity, breather_id);
+    assert_eq!(bloodstream_outgassing.amount, 100.);
 }
 
 #[test]
@@ -192,5 +199,6 @@ fn outgas_partial_breath() {
         .read(bloodstream_outgassing_events)
         .next()
         .unwrap();
-    assert_eq!(bloodstream_outgassing.0, 50.);
+    assert_eq!(bloodstream_outgassing.entity, breather_id);
+    assert_eq!(bloodstream_outgassing.amount, 50.);
 }
