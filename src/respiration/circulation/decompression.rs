@@ -9,6 +9,10 @@ pub struct InertGasInBloodstream(pub f32);
 #[derive(Component)]
 pub struct SafeOutgassingRate(pub f32);
 
+pub fn decompression_plugin(app: &mut App) {
+    app.add_systems(FixedUpdate, absorbing_and_outgassing);
+}
+
 pub fn absorbing_and_outgassing(
     mut breathers: Query<(&Depth, &mut InertGasInBloodstream, &Lungs)>,
     mut gases_to_circulate: EventReader<CirculateGas>,

@@ -12,5 +12,5 @@ pub struct CirculateGas {
 
 pub fn circulation_plugin(app: &mut App) {
     app.add_event::<CirculateGas>();
-    app.add_systems(FixedUpdate, absorbing_and_outgassing);
+    app.add_plugins(decompression_plugin);
 }
