@@ -18,7 +18,7 @@ pub struct BloodstreamOutgassing {
 
 pub fn decompression_plugin(app: &mut App) {
     app.add_event::<BloodstreamOutgassing>();
-    app.add_systems(FixedUpdate, absorbing_and_outgassing);
+    app.add_systems(FixedUpdate, (absorbing_and_outgassing, outgassing_damage.after(absorbing_and_outgassing)));
 }
 
 pub fn absorbing_and_outgassing(
