@@ -94,7 +94,10 @@ fn fill_lungs() {
     // should have sent an event
     let gas_to_circulate_events = app.world.resource::<Events<CirculateGas>>();
     let mut gas_to_circulate_reader = gas_to_circulate_events.get_reader();
-    let gas_to_circulate = gas_to_circulate_reader.read(gas_to_circulate_events).next().unwrap();
+    let gas_to_circulate = gas_to_circulate_reader
+        .read(gas_to_circulate_events)
+        .next()
+        .unwrap();
     assert_eq!(gas_to_circulate.entity, breather_id);
     assert_eq!(gas_to_circulate.amount, 50.);
 }
@@ -138,7 +141,10 @@ fn fill_lungs_partial() {
     // should have sent an event
     let gas_to_circulate_events = app.world.resource::<Events<CirculateGas>>();
     let mut gas_to_circulate_reader = gas_to_circulate_events.get_reader();
-    let gas_to_circulate = gas_to_circulate_reader.read(gas_to_circulate_events).next().unwrap();
+    let gas_to_circulate = gas_to_circulate_reader
+        .read(gas_to_circulate_events)
+        .next()
+        .unwrap();
     assert_eq!(gas_to_circulate.entity, breather_id);
     assert_eq!(gas_to_circulate.amount, 50.);
 }
