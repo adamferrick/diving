@@ -42,6 +42,7 @@ fn main() {
                 update_position
                     .before(fire_speargun)
                     .after(player_control_velocity),
+                update_depth.after(update_position),
             ),
         )
         .run();
