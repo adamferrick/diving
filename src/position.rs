@@ -8,6 +8,13 @@ pub struct Velocity(pub Vec3);
 #[derive(Component)]
 pub struct Depth(pub f32);
 
+pub fn position_plugin(app: &mut App) {
+    app.add_systems(
+        FixedUpdate,
+        (update_position, update_depth.after(update_position)),
+    );
+}
+
 pub fn update_position(mut movables: Query<(&mut Transform, &Velocity)>) {
     for (mut transform, velocity) in &mut movables {
         transform.translation += velocity.0;

@@ -29,22 +29,14 @@ fn main() {
             health_plugin,
             collision_plugin,
             diver_plugin,
+            position_plugin,
             projectile_plugin,
             respiration_plugin,
             ui_plugin,
         ))
         .init_resource::<CursorPosition>()
         .add_systems(Startup, spawn_camera)
-        .add_systems(
-            FixedUpdate,
-            (
-                update_cursor,
-                update_position
-                    .before(fire_speargun)
-                    .after(player_control_velocity),
-                update_depth.after(update_position),
-            ),
-        )
+        .add_systems(FixedUpdate, (update_cursor,))
         .run();
 }
 

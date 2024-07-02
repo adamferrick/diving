@@ -56,9 +56,10 @@ pub fn diver_plugin(app: &mut App) {
     app.add_systems(
         FixedUpdate,
         (
-            player_control_velocity,
+            player_control_velocity.before(update_position),
             fire_speargun
                 .before(fire_projectile)
+                .after(update_position)
                 .after(crate::update_cursor),
             player_inhale.before(inhalation).after(update_position),
         ),
