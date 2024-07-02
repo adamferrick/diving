@@ -1,4 +1,5 @@
 use crate::inhalation::*;
+use crate::position::*;
 use bevy::prelude::*;
 
 #[derive(Component)]
@@ -8,19 +9,18 @@ pub struct InertGasInBloodstream(pub f32);
 pub struct SafeOutgassingRate(pub f32);
 
 pub fn absorbing_and_outgassing(
-    mut breathers: Query<(&Transform, &SafeOutgassingRate, &mut InertGasInBloodstream)>,
+    mut breathers: Query<(&Depth, &SafeOutgassingRate, &mut InertGasInBloodstream)>,
     mut breaths: EventReader<BreathTaken>,
 ) {
     for breath in breaths.read() {
-        if let Ok((transform, safe_outgassing_rate, mut inert_gas_in_bloodstream)) =
+        if let Ok((depth, safe_outgassing_rate, mut inert_gas_in_bloodstream)) =
             breathers.get_mut(breath.entity)
         {
-            let depth = transform.translation.y.abs();
-            if depth < inert_gas_in_bloodstream.0 {
-                inert_gas_in_bloodstream.0 = depth;
+            if depth.0 < inert_gas_in_bloodstream.0 {
+                inert_gas_in_bloodstream.0 = depth.0;
             } else {
                 inert_gas_in_bloodstream.0 =
-                    (inert_gas_in_bloodstream.0 + safe_outgassing_rate.0).max(depth);
+                    (inert_gas_in_bloodstream.0 + safe_outgassing_rate.0).max(depth.0);
             }
         }
     }
@@ -34,7 +34,7 @@ fn absorb() {
     let breather_id = app
         .world
         .spawn((
-            Transform::from_translation(Vec3::new(0., -100., 0.)),
+            Depth(100.),
             InertGasInBloodstream(0.),
             SafeOutgassingRate(0.),
         ))
