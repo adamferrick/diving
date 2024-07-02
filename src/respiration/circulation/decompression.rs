@@ -7,32 +7,42 @@ use bevy::prelude::*;
 pub struct InertGasInBloodstream(pub f32);
 
 #[derive(Component)]
-pub struct SafeOutgassingRate(pub f32);
+pub struct SafeOutgassingAmount(pub f32);
+
+#[derive(Event)]
+pub struct BloodstreamOutgassing(pub f32);
 
 pub fn decompression_plugin(app: &mut App) {
+    app.add_event::<BloodstreamOutgassing>();
     app.add_systems(FixedUpdate, absorbing_and_outgassing);
 }
 
 pub fn absorbing_and_outgassing(
     mut breathers: Query<(&Depth, &mut InertGasInBloodstream, &Lungs)>,
     mut gases_to_circulate: EventReader<CirculateGas>,
+    mut bloodstream_outgassing: EventWriter<BloodstreamOutgassing>,
 ) {
     for gas_to_circulate in gases_to_circulate.read() {
         if let Ok((depth, mut inert_gas_in_bloodstream, lungs)) =
             breathers.get_mut(gas_to_circulate.entity)
         {
-            inert_gas_in_bloodstream.0 +=
+            let delta =
                 (gas_to_circulate.amount / lungs.capacity) * (depth.0 - inert_gas_in_bloodstream.0);
+            inert_gas_in_bloodstream.0 += delta;
             println!("inert gas in bloodstream: {}", inert_gas_in_bloodstream.0);
+            if delta < 0. {
+                bloodstream_outgassing.send(BloodstreamOutgassing(-delta));
+            }
         }
     }
 }
 
 #[test]
-fn full_breath() {
+fn absorb_full_breath() {
     let mut app = App::new();
     app.add_systems(Update, absorbing_and_outgassing);
     app.add_event::<CirculateGas>();
+    app.add_event::<BloodstreamOutgassing>();
     let breather_id = app
         .world
         .spawn((
@@ -57,13 +67,21 @@ fn full_breath() {
         .unwrap()
         .0;
     assert_eq!(inert_gas, 100.);
+    // should not send a BloodstreamOutgassing event (gas was absorbed, not released)
+    let bloodstream_outgassing_events = app.world.resource::<Events<BloodstreamOutgassing>>();
+    let mut bloodstream_outgassing_reader = bloodstream_outgassing_events.get_reader();
+    let bloodstream_outgassing = bloodstream_outgassing_reader
+        .read(bloodstream_outgassing_events)
+        .next();
+    assert!(bloodstream_outgassing.is_none());
 }
 
 #[test]
-fn partial_breath() {
+fn absorb_partial_breath() {
     let mut app = App::new();
     app.add_systems(Update, absorbing_and_outgassing);
     app.add_event::<CirculateGas>();
+    app.add_event::<BloodstreamOutgassing>();
     let breather_id = app
         .world
         .spawn((
@@ -88,4 +106,91 @@ fn partial_breath() {
         .unwrap()
         .0;
     assert_eq!(inert_gas, 50.);
+    // should not send a BloodstreamOutgassing event (gas was absorbed, not released)
+    let bloodstream_outgassing_events = app.world.resource::<Events<BloodstreamOutgassing>>();
+    let mut bloodstream_outgassing_reader = bloodstream_outgassing_events.get_reader();
+    let bloodstream_outgassing = bloodstream_outgassing_reader
+        .read(bloodstream_outgassing_events)
+        .next();
+    assert!(bloodstream_outgassing.is_none());
+}
+
+#[test]
+fn outgas_full_breath() {
+    let mut app = App::new();
+    app.add_systems(Update, absorbing_and_outgassing);
+    app.add_event::<CirculateGas>();
+    app.add_event::<BloodstreamOutgassing>();
+    let breather_id = app
+        .world
+        .spawn((
+            Depth(0.),
+            InertGasInBloodstream(100.),
+            Lungs {
+                capacity: 100.,
+                amount_remaining: 100.,
+            },
+        ))
+        .id();
+    app.world
+        .resource_mut::<Events<CirculateGas>>()
+        .send(CirculateGas {
+            entity: breather_id,
+            amount: 100.,
+        });
+    app.update();
+    let inert_gas = app
+        .world
+        .get::<InertGasInBloodstream>(breather_id)
+        .unwrap()
+        .0;
+    assert_eq!(inert_gas, 0.);
+    // should not send a BloodstreamOutgassing event (gas was absorbed, not released)
+    let bloodstream_outgassing_events = app.world.resource::<Events<BloodstreamOutgassing>>();
+    let mut bloodstream_outgassing_reader = bloodstream_outgassing_events.get_reader();
+    let bloodstream_outgassing = bloodstream_outgassing_reader
+        .read(bloodstream_outgassing_events)
+        .next()
+        .unwrap();
+    assert_eq!(bloodstream_outgassing.0, 100.);
+}
+
+#[test]
+fn outgas_partial_breath() {
+    let mut app = App::new();
+    app.add_systems(Update, absorbing_and_outgassing);
+    app.add_event::<CirculateGas>();
+    app.add_event::<BloodstreamOutgassing>();
+    let breather_id = app
+        .world
+        .spawn((
+            Depth(0.),
+            InertGasInBloodstream(100.),
+            Lungs {
+                capacity: 100.,
+                amount_remaining: 100.,
+            },
+        ))
+        .id();
+    app.world
+        .resource_mut::<Events<CirculateGas>>()
+        .send(CirculateGas {
+            entity: breather_id,
+            amount: 50.,
+        });
+    app.update();
+    let inert_gas = app
+        .world
+        .get::<InertGasInBloodstream>(breather_id)
+        .unwrap()
+        .0;
+    assert_eq!(inert_gas, 50.);
+    // should not send a BloodstreamOutgassing event (gas was absorbed, not released)
+    let bloodstream_outgassing_events = app.world.resource::<Events<BloodstreamOutgassing>>();
+    let mut bloodstream_outgassing_reader = bloodstream_outgassing_events.get_reader();
+    let bloodstream_outgassing = bloodstream_outgassing_reader
+        .read(bloodstream_outgassing_events)
+        .next()
+        .unwrap();
+    assert_eq!(bloodstream_outgassing.0, 50.);
 }
