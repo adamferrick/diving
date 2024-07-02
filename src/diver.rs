@@ -2,6 +2,7 @@ use crate::collision::*;
 use crate::health::*;
 use crate::position::*;
 use crate::projectile::*;
+use crate::respiration::circulation::decompression::*;
 use crate::respiration::inhalation::*;
 use crate::CursorPosition;
 use bevy::prelude::*;
@@ -22,6 +23,8 @@ const DIVER_TANK_AMOUNT_OXYGEN: f32 = 0.21;
 const DIVER_LUNG_CAPACITY: f32 = 100.;
 const DIVER_LUNG_AMOUNT_REMAINING: f32 = 50.;
 
+const DIVER_INITIAL_INERT_GAS: f32 = 0.;
+
 #[derive(Component)]
 pub struct Diver;
 
@@ -31,8 +34,10 @@ pub struct DiverBundle {
     hitbox: RectangularHitbox,
     health: Health,
     velocity: Velocity,
+    depth: Depth,
     equipped_tank: EquippedTank,
     lungs: Lungs,
+    inert_gas_in_bloodstream: InertGasInBloodstream,
 }
 
 impl DiverBundle {
@@ -42,11 +47,13 @@ impl DiverBundle {
             hitbox: RectangularHitbox(Rectangle::new(DIVER_WIDTH, DIVER_HEIGHT)),
             health: Health(100.),
             velocity: Velocity(Vec3::new(0., 0., 0.)),
+            depth: Depth(0.),
             equipped_tank: EquippedTank(tank),
             lungs: Lungs {
                 capacity: DIVER_LUNG_CAPACITY,
                 amount_remaining: DIVER_LUNG_AMOUNT_REMAINING,
             },
+            inert_gas_in_bloodstream: InertGasInBloodstream(DIVER_INITIAL_INERT_GAS),
         }
     }
 }
@@ -92,7 +99,7 @@ pub fn spawn_diver(
         MaterialMesh2dBundle {
             mesh: mesh_handle.into(),
             material: material_handle,
-            transform: Transform::from_translation(Vec3::new(20., -25., 0.)),
+            transform: Transform::from_translation(Vec3::new(0., 0., 0.)),
             ..default()
         },
     ));

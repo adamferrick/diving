@@ -19,6 +19,7 @@ pub fn absorbing_and_outgassing(
         {
             inert_gas_in_bloodstream.0 +=
                 (gas_to_circulate.amount / lungs.capacity) * (depth.0 - inert_gas_in_bloodstream.0);
+            println!("inert gas in bloodstream: {}", inert_gas_in_bloodstream.0);
         }
     }
 }
