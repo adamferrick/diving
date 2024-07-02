@@ -24,6 +24,7 @@ const DIVER_LUNG_CAPACITY: f32 = 100.;
 const DIVER_LUNG_AMOUNT_REMAINING: f32 = 50.;
 
 const DIVER_INITIAL_INERT_GAS: f32 = 0.;
+const DIVER_SAFE_OUTGASSING_AMOUNT: f32 = 20.;
 
 #[derive(Component)]
 pub struct Diver;
@@ -38,6 +39,7 @@ pub struct DiverBundle {
     equipped_tank: EquippedTank,
     lungs: Lungs,
     inert_gas_in_bloodstream: InertGasInBloodstream,
+    safe_outgassing_amount: SafeOutgassingAmount,
 }
 
 impl DiverBundle {
@@ -54,6 +56,7 @@ impl DiverBundle {
                 amount_remaining: DIVER_LUNG_AMOUNT_REMAINING,
             },
             inert_gas_in_bloodstream: InertGasInBloodstream(DIVER_INITIAL_INERT_GAS),
+            safe_outgassing_amount: SafeOutgassingAmount(DIVER_SAFE_OUTGASSING_AMOUNT),
         }
     }
 }

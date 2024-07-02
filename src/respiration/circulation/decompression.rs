@@ -1,4 +1,5 @@
 use crate::circulation::*;
+use crate::health::*;
 use crate::inhalation::*;
 use crate::position::*;
 use bevy::prelude::*;
@@ -201,4 +202,70 @@ fn outgas_partial_breath() {
         .unwrap();
     assert_eq!(bloodstream_outgassing.entity, breather_id);
     assert_eq!(bloodstream_outgassing.amount, 50.);
+}
+
+pub fn outgassing_damage(
+    breathers: Query<&SafeOutgassingAmount, With<Health>>,
+    mut bloodstream_outgassings: EventReader<BloodstreamOutgassing>,
+    mut damage_events: EventWriter<DamageEvent>,
+) {
+    for bloodstream_outgassing in bloodstream_outgassings.read() {
+        if let Ok(safe_outgassing_amount) = breathers.get(bloodstream_outgassing.entity) {
+            if bloodstream_outgassing.amount > safe_outgassing_amount.0 {
+                damage_events.send(DamageEvent {
+                    target: bloodstream_outgassing.entity,
+                    damage: bloodstream_outgassing.amount - safe_outgassing_amount.0,
+                });
+            }
+        }
+    }
+}
+
+#[test]
+fn harmful_outgassing() {
+    let mut app = App::new();
+    app.add_event::<BloodstreamOutgassing>();
+    app.add_event::<DamageEvent>();
+    app.add_systems(Update, outgassing_damage);
+    let breather_id = app
+        .world
+        .spawn((SafeOutgassingAmount(20.), Health(100.)))
+        .id();
+    app.world
+        .resource_mut::<Events<BloodstreamOutgassing>>()
+        .send(BloodstreamOutgassing {
+            entity: breather_id,
+            amount: 50.,
+        });
+    app.update();
+    // should send a DamageEvent
+    let damage_events = app.world.resource::<Events<DamageEvent>>();
+    let mut damage_reader = damage_events.get_reader();
+    let damage = damage_reader.read(damage_events).next().unwrap();
+    assert_eq!(damage.target, breather_id);
+    assert_eq!(damage.damage, 30.);
+}
+
+#[test]
+fn harmless_outgassing() {
+    let mut app = App::new();
+    app.add_event::<BloodstreamOutgassing>();
+    app.add_event::<DamageEvent>();
+    app.add_systems(Update, outgassing_damage);
+    let breather_id = app
+        .world
+        .spawn((SafeOutgassingAmount(20.), Health(100.)))
+        .id();
+    app.world
+        .resource_mut::<Events<BloodstreamOutgassing>>()
+        .send(BloodstreamOutgassing {
+            entity: breather_id,
+            amount: 15.,
+        });
+    app.update();
+    // should not send a DamageEvent
+    let damage_events = app.world.resource::<Events<DamageEvent>>();
+    let mut damage_reader = damage_events.get_reader();
+    let damage = damage_reader.read(damage_events).next();
+    assert!(damage.is_none());
 }
