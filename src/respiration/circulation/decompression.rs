@@ -19,7 +19,8 @@ pub fn absorbing_and_outgassing(
             if depth < inert_gas_in_bloodstream.0 {
                 inert_gas_in_bloodstream.0 = depth;
             } else {
-                inert_gas_in_bloodstream.0 = (inert_gas_in_bloodstream.0 + safe_outgassing_rate.0).max(depth);
+                inert_gas_in_bloodstream.0 =
+                    (inert_gas_in_bloodstream.0 + safe_outgassing_rate.0).max(depth);
             }
         }
     }
