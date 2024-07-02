@@ -1,3 +1,4 @@
+use crate::circulation::CirculateGas;
 use bevy::prelude::*;
 
 #[derive(Component)]
@@ -27,12 +28,13 @@ pub fn inhalation_plugin(app: &mut App) {
 }
 
 pub fn inhalation(
-    mut breathers: Query<(&mut Lungs, &EquippedTank)>,
+    mut breathers: Query<(Entity, &mut Lungs, &EquippedTank)>,
     mut cylinders: Query<&mut DivingCylinder>,
     mut breaths: EventReader<BreathTaken>,
+    mut circulate_gas: EventWriter<CirculateGas>,
 ) {
     for breath in breaths.read() {
-        if let Ok((mut lungs, equipped_tank_id)) = breathers.get_mut(breath.entity) {
+        if let Ok((entity, mut lungs, equipped_tank_id)) = breathers.get_mut(breath.entity) {
             if let Ok(mut cylinder) = cylinders.get_mut(equipped_tank_id.0) {
                 let amount_breathed =
                     (lungs.capacity - lungs.amount_remaining).min(cylinder.amount_remaining);
@@ -42,6 +44,12 @@ pub fn inhalation(
                     "amount breathed: {}, tank remaining: {}, lung remaining: {}",
                     amount_breathed, cylinder.amount_remaining, lungs.amount_remaining
                 );
+                if amount_breathed > 0. {
+                    circulate_gas.send(CirculateGas {
+                        entity: entity,
+                        amount: amount_breathed,
+                    });
+                }
             }
         }
     }
@@ -51,6 +59,7 @@ pub fn inhalation(
 fn fill_lungs() {
     let mut app = App::new();
     app.add_event::<BreathTaken>();
+    app.add_event::<CirculateGas>();
     app.add_systems(Update, inhalation);
     let cylinder_id = app
         .world
@@ -82,12 +91,19 @@ fn fill_lungs() {
     // cylinder proportion should be half empty
     let new_cylinder = app.world.get::<DivingCylinder>(cylinder_id).unwrap();
     assert_eq!(new_cylinder.amount_remaining, 50.);
+    // should have sent an event
+    let gas_to_circulate_events = app.world.resource::<Events<CirculateGas>>();
+    let mut gas_to_circulate_reader = gas_to_circulate_events.get_reader();
+    let gas_to_circulate = gas_to_circulate_reader.read(gas_to_circulate_events).next().unwrap();
+    assert_eq!(gas_to_circulate.entity, breather_id);
+    assert_eq!(gas_to_circulate.amount, 50.);
 }
 
 #[test]
 fn fill_lungs_partial() {
     let mut app = App::new();
     app.add_event::<BreathTaken>();
+    app.add_event::<CirculateGas>();
     app.add_systems(Update, inhalation);
     let cylinder_id = app
         .world
@@ -119,12 +135,19 @@ fn fill_lungs_partial() {
     // cylinder proportion should be empty
     let new_cylinder = app.world.get::<DivingCylinder>(cylinder_id).unwrap();
     assert_eq!(new_cylinder.amount_remaining, 0.);
+    // should have sent an event
+    let gas_to_circulate_events = app.world.resource::<Events<CirculateGas>>();
+    let mut gas_to_circulate_reader = gas_to_circulate_events.get_reader();
+    let gas_to_circulate = gas_to_circulate_reader.read(gas_to_circulate_events).next().unwrap();
+    assert_eq!(gas_to_circulate.entity, breather_id);
+    assert_eq!(gas_to_circulate.amount, 50.);
 }
 
 #[test]
 fn empty_cylinder() {
     let mut app = App::new();
     app.add_event::<BreathTaken>();
+    app.add_event::<CirculateGas>();
     app.add_systems(Update, inhalation);
     let cylinder_id = app
         .world
@@ -156,4 +179,9 @@ fn empty_cylinder() {
     // cylinder proportion still should be empty
     let new_cylinder = app.world.get::<DivingCylinder>(cylinder_id).unwrap();
     assert_eq!(new_cylinder.amount_remaining, 0.);
+    // should not have sent an event
+    let gas_to_circulate_events = app.world.resource::<Events<CirculateGas>>();
+    let mut gas_to_circulate_reader = gas_to_circulate_events.get_reader();
+    let gas_to_circulate = gas_to_circulate_reader.read(gas_to_circulate_events).next();
+    assert!(gas_to_circulate.is_none());
 }
