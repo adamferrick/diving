@@ -7,7 +7,7 @@ use bevy::prelude::*;
 pub struct HealthText;
 
 #[derive(Component)]
-pub struct LungsText;
+pub struct CirculationText;
 
 pub fn ui_plugin(app: &mut App) {
     app.add_systems(Startup, spawn_health_ui);
@@ -15,7 +15,7 @@ pub fn ui_plugin(app: &mut App) {
         FixedUpdate,
         (
             update_health_ui.after(damage_health),
-            update_lungs_ui.after(inhalation),
+            update_respiration_ui.after(inhalation),
         ),
     );
 }
@@ -52,7 +52,7 @@ pub fn spawn_health_ui(mut commands: Commands) {
                 },
             ));
             commands.spawn((
-                LungsText,
+                CirculationText,
                 TextBundle {
                     text: Text::from_section(
                         "",
@@ -78,15 +78,15 @@ pub fn update_health_ui(
     }
 }
 
-pub fn update_lungs_ui(
-    mut texts: Query<&mut Text, With<LungsText>>,
-    lungs_query: Query<&Lungs, With<Diver>>,
+pub fn update_respiration_ui(
+    mut texts: Query<&mut Text, With<CirculationText>>,
+    bloodstream_query: Query<&BloodstreamContent, With<Diver>>,
 ) {
     for mut text in &mut texts {
-        if let Ok(lungs) = lungs_query.get_single() {
+        if let Ok(bloodstream) = bloodstream_query.get_single() {
             text.sections[0].value = format!(
-                "Lungs: {}%",
-                (lungs.amount_remaining / lungs.capacity) * 100.
+                "Air remaining: {}%",
+                (bloodstream.amount_remaining / bloodstream.capacity) * 100.
             );
         }
     }

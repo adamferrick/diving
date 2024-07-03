@@ -18,20 +18,31 @@ pub struct BloodstreamOutgassing {
 
 pub fn decompression_plugin(app: &mut App) {
     app.add_event::<BloodstreamOutgassing>();
-    app.add_systems(FixedUpdate, (absorbing_and_outgassing, outgassing_damage.after(absorbing_and_outgassing)));
+    app.add_systems(
+        FixedUpdate,
+        (
+            absorbing_and_outgassing,
+            outgassing_damage.after(absorbing_and_outgassing),
+        ),
+    );
 }
 
 pub fn absorbing_and_outgassing(
-    mut breathers: Query<(Entity, &Depth, &mut InertGasInBloodstream, &Lungs)>,
+    mut breathers: Query<(
+        Entity,
+        &Depth,
+        &mut InertGasInBloodstream,
+        &BloodstreamContent,
+    )>,
     mut gases_to_circulate: EventReader<CirculateGas>,
     mut bloodstream_outgassing: EventWriter<BloodstreamOutgassing>,
 ) {
     for gas_to_circulate in gases_to_circulate.read() {
-        if let Ok((entity, depth, mut inert_gas_in_bloodstream, lungs)) =
+        if let Ok((entity, depth, mut inert_gas_in_bloodstream, bloodstream_content)) =
             breathers.get_mut(gas_to_circulate.entity)
         {
-            let delta =
-                (gas_to_circulate.amount / lungs.capacity) * (depth.0 - inert_gas_in_bloodstream.0);
+            let delta = (gas_to_circulate.amount / bloodstream_content.capacity)
+                * (depth.0 - inert_gas_in_bloodstream.0);
             inert_gas_in_bloodstream.0 += delta;
             println!("inert gas in bloodstream: {}", inert_gas_in_bloodstream.0);
             if delta < 0. {
@@ -55,9 +66,11 @@ fn absorb_full_breath() {
         .spawn((
             Depth(100.),
             InertGasInBloodstream(0.),
-            Lungs {
+            BloodstreamContent {
                 capacity: 100.,
                 amount_remaining: 100.,
+                proportion_of_oxygen: 0.,
+                proportion_of_nitrogen: 0.,
             },
         ))
         .id();
@@ -94,9 +107,11 @@ fn absorb_partial_breath() {
         .spawn((
             Depth(100.),
             InertGasInBloodstream(0.),
-            Lungs {
+            BloodstreamContent {
                 capacity: 100.,
                 amount_remaining: 100.,
+                proportion_of_oxygen: 0.,
+                proportion_of_nitrogen: 0.,
             },
         ))
         .id();
@@ -133,9 +148,11 @@ fn outgas_full_breath() {
         .spawn((
             Depth(0.),
             InertGasInBloodstream(100.),
-            Lungs {
+            BloodstreamContent {
                 capacity: 100.,
                 amount_remaining: 100.,
+                proportion_of_oxygen: 0.,
+                proportion_of_nitrogen: 0.,
             },
         ))
         .id();
@@ -174,9 +191,11 @@ fn outgas_partial_breath() {
         .spawn((
             Depth(0.),
             InertGasInBloodstream(100.),
-            Lungs {
+            BloodstreamContent {
                 capacity: 100.,
                 amount_remaining: 100.,
+                proportion_of_oxygen: 0.,
+                proportion_of_nitrogen: 0.,
             },
         ))
         .id();

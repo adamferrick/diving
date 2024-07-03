@@ -19,9 +19,13 @@ const SPEAR_FIRE_RADIUS: f32 = 40.;
 
 const DIVER_TANK_CAPACITY: f32 = 1000.;
 const DIVER_TANK_AMOUNT_REMAINING: f32 = 800.;
-const DIVER_TANK_AMOUNT_OXYGEN: f32 = 0.21;
-const DIVER_LUNG_CAPACITY: f32 = 100.;
-const DIVER_LUNG_AMOUNT_REMAINING: f32 = 50.;
+const DIVER_TANK_OXYGEN: f32 = 0.21;
+const DIVER_TANK_NITROGEN: f32 = 0.78;
+
+const DIVER_BLOODSTREAM_CAPACITY: f32 = 100.;
+const DIVER_BLOODSTREAM_AMOUNT_REMAINING: f32 = 50.;
+const DIVER_INITIAL_OXYGEN: f32 = 0.21;
+const DIVER_INITIAL_NITROGEN: f32 = 0.78;
 
 const DIVER_INITIAL_INERT_GAS: f32 = 0.;
 const DIVER_SAFE_OUTGASSING_AMOUNT: f32 = 20.;
@@ -37,7 +41,7 @@ pub struct DiverBundle {
     velocity: Velocity,
     depth: Depth,
     equipped_tank: EquippedTank,
-    lungs: Lungs,
+    bloodstream_content: BloodstreamContent,
     inert_gas_in_bloodstream: InertGasInBloodstream,
     safe_outgassing_amount: SafeOutgassingAmount,
 }
@@ -51,9 +55,11 @@ impl DiverBundle {
             velocity: Velocity(Vec3::new(0., 0., 0.)),
             depth: Depth(0.),
             equipped_tank: EquippedTank(tank),
-            lungs: Lungs {
-                capacity: DIVER_LUNG_CAPACITY,
-                amount_remaining: DIVER_LUNG_AMOUNT_REMAINING,
+            bloodstream_content: BloodstreamContent {
+                capacity: DIVER_BLOODSTREAM_CAPACITY,
+                amount_remaining: DIVER_BLOODSTREAM_AMOUNT_REMAINING,
+                proportion_of_oxygen: DIVER_INITIAL_OXYGEN,
+                proportion_of_nitrogen: DIVER_INITIAL_NITROGEN,
             },
             inert_gas_in_bloodstream: InertGasInBloodstream(DIVER_INITIAL_INERT_GAS),
             safe_outgassing_amount: SafeOutgassingAmount(DIVER_SAFE_OUTGASSING_AMOUNT),
@@ -93,7 +99,8 @@ pub fn spawn_diver(
         .spawn(DivingCylinder {
             capacity: DIVER_TANK_CAPACITY,
             amount_remaining: DIVER_TANK_AMOUNT_REMAINING,
-            proportion_of_oxygen: DIVER_TANK_AMOUNT_OXYGEN,
+            proportion_of_oxygen: DIVER_TANK_OXYGEN,
+            proportion_of_nitrogen: DIVER_TANK_NITROGEN,
         })
         .id();
 
