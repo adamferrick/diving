@@ -1,6 +1,5 @@
 use bevy::prelude::*;
 
-use crate::helpers::weighted_average;
 use crate::respiration::circulation::*;
 use crate::respiration::BloodstreamContent;
 use crate::Depth;
@@ -8,8 +7,12 @@ use crate::Depth;
 #[derive(Component)]
 pub struct BloodstreamPressure(pub f32);
 
-pub fn pressure_plugin(app: &mut App) {
+pub fn equalization_plugin(app: &mut App) {
     app.add_systems(FixedUpdate, equalize_pressure);
+}
+
+fn weighted_average(value_1: f32, weight_1: f32, value_2: f32, weight_2: f32) -> f32 {
+    (weight_1 * value_1 + weight_2 * value_2) / (weight_1 + weight_2)
 }
 
 pub fn equalize_pressure(
