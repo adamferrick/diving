@@ -79,6 +79,8 @@ fn absorb_full_breath() {
         .send(CirculateGas {
             entity: breather_id,
             amount: 100.,
+            proportion_of_oxygen: 0.,
+            proportion_of_nitrogen: 0.,
         });
     app.update();
     let inert_gas = app
@@ -120,6 +122,8 @@ fn absorb_partial_breath() {
         .send(CirculateGas {
             entity: breather_id,
             amount: 50.,
+            proportion_of_oxygen: 0.,
+            proportion_of_nitrogen: 0.,
         });
     app.update();
     let inert_gas = app
@@ -161,6 +165,8 @@ fn outgas_full_breath() {
         .send(CirculateGas {
             entity: breather_id,
             amount: 100.,
+            proportion_of_oxygen: 0.,
+            proportion_of_nitrogen: 0.,
         });
     app.update();
     let inert_gas = app
@@ -204,6 +210,8 @@ fn outgas_partial_breath() {
         .send(CirculateGas {
             entity: breather_id,
             amount: 50.,
+            proportion_of_oxygen: 0.,
+            proportion_of_nitrogen: 0.,
         });
     app.update();
     let inert_gas = app

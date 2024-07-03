@@ -10,6 +10,8 @@ use pressure::*;
 pub struct CirculateGas {
     pub entity: Entity,
     pub amount: f32,
+    pub proportion_of_oxygen: f32,
+    pub proportion_of_nitrogen: f32,
 }
 
 pub fn circulation_plugin(app: &mut App) {

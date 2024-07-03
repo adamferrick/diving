@@ -71,6 +71,8 @@ pub fn inhalation(
                     circulate_gas.send(CirculateGas {
                         entity: entity,
                         amount: amount_breathed,
+                        proportion_of_oxygen: cylinder.proportion_of_oxygen,
+                        proportion_of_nitrogen: cylinder.proportion_of_nitrogen,
                     });
                 }
             }

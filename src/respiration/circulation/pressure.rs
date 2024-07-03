@@ -51,6 +51,8 @@ fn did_equalize_pressure() {
     app.world.resource_mut::<Events<CirculateGas>>().send(CirculateGas {
         entity: breather_id,
         amount: 25.,
+        proportion_of_oxygen: 0.,
+        proportion_of_nitrogen: 0.,
     });
     app.update();
     let new_bloodstream_pressure = app.world.get::<BloodstreamPressure>(breather_id).unwrap();
