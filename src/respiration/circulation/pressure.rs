@@ -9,10 +9,10 @@ use crate::Depth;
 pub struct BloodstreamPressure(pub f32);
 
 pub fn pressure_plugin(app: &mut App) {
-    app.add_systems(FixedUpdate, equalize);
+    app.add_systems(FixedUpdate, equalize_pressure);
 }
 
-pub fn equalize(
+pub fn equalize_pressure(
     mut breathers: Query<(&mut BloodstreamPressure, &BloodstreamContent, &Depth)>,
     mut gases_to_circulate: EventReader<CirculateGas>,
 ) {
@@ -31,10 +31,10 @@ pub fn equalize(
 }
 
 #[test]
-fn did_equalize() {
+fn did_equalize_pressure() {
     let mut app = App::new();
     app.add_event::<CirculateGas>();
-    app.add_systems(Update, equalize);
+    app.add_systems(Update, equalize_pressure);
     let breather_id = app
         .world
         .spawn((
