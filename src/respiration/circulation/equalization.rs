@@ -7,7 +7,14 @@ use crate::Depth;
 #[derive(Component)]
 pub struct BloodstreamPressure(pub f32);
 
+#[derive(Event)]
+pub struct Outgassing {
+    pub entity: Entity,
+    pub amount: f32,
+}
+
 pub fn equalization_plugin(app: &mut App) {
+    app.add_event::<Outgassing>();
     app.add_systems(
         FixedUpdate,
         (equalize_pressure, equalize_gases)
@@ -20,27 +27,80 @@ fn weighted_average(value_1: f32, weight_1: f32, value_2: f32, weight_2: f32) ->
 }
 
 pub fn equalize_pressure(
-    mut breathers: Query<(&mut BloodstreamPressure, &BloodstreamContent, &Depth)>,
+    mut breathers: Query<(
+        Entity,
+        &mut BloodstreamPressure,
+        &BloodstreamContent,
+        &Depth,
+    )>,
     mut gases_to_circulate: EventReader<CirculateGas>,
+    mut outgassings: EventWriter<Outgassing>,
 ) {
     for gas_to_circulate in gases_to_circulate.read() {
-        if let Ok((mut bloodstream_pressure, bloodstream_content, depth)) =
+        if let Ok((breather_entity, mut bloodstream_pressure, bloodstream_content, depth)) =
             breathers.get_mut(gas_to_circulate.entity)
         {
-            bloodstream_pressure.0 = weighted_average(
+            let new_bloodstream_pressure = weighted_average(
                 bloodstream_pressure.0,
                 bloodstream_content.amount_remaining,
                 depth.0,
                 gas_to_circulate.amount,
             );
+            let delta = new_bloodstream_pressure - bloodstream_pressure.0;
+            if delta < 0. {
+                outgassings.send(Outgassing {
+                    entity: breather_entity,
+                    amount: -delta,
+                });
+            }
+            bloodstream_pressure.0 = new_bloodstream_pressure;
         }
     }
 }
 
 #[test]
-fn did_equalize_pressure() {
+fn did_equalize_pressure_absorption() {
     let mut app = App::new();
     app.add_event::<CirculateGas>();
+    app.add_event::<Outgassing>();
+    app.add_systems(Update, equalize_pressure);
+    let breather_id = app
+        .world
+        .spawn((
+            BloodstreamPressure(0.),
+            BloodstreamContent {
+                capacity: 100.,
+                amount_remaining: 75.,
+                proportion_of_oxygen: 0.,
+                proportion_of_nitrogen: 0.,
+            },
+            Depth(100.),
+        ))
+        .id();
+    app.world
+        .resource_mut::<Events<CirculateGas>>()
+        .send(CirculateGas {
+            entity: breather_id,
+            amount: 25.,
+            proportion_of_oxygen: 0.,
+            proportion_of_nitrogen: 0.,
+        });
+    app.update();
+    // should have equalized the pressure
+    let new_bloodstream_pressure = app.world.get::<BloodstreamPressure>(breather_id).unwrap();
+    assert_eq!(new_bloodstream_pressure.0, 25.);
+    // should not have sent an outgassing event (gas should have been absorbed)
+    let outgassing_events = app.world.resource::<Events<Outgassing>>();
+    let mut outgassing_reader = outgassing_events.get_reader();
+    let outgassings = outgassing_reader.read(outgassing_events).next();
+    assert!(outgassings.is_none());
+}
+
+#[test]
+fn did_equalize_pressure_outgassing() {
+    let mut app = App::new();
+    app.add_event::<CirculateGas>();
+    app.add_event::<Outgassing>();
     app.add_systems(Update, equalize_pressure);
     let breather_id = app
         .world

@@ -3,6 +3,7 @@ use crate::health::*;
 use crate::position::*;
 use crate::projectile::*;
 use crate::respiration::circulation::decompression::*;
+use crate::respiration::circulation::equalization::*;
 use crate::respiration::inhalation::*;
 use crate::CursorPosition;
 use bevy::prelude::*;
@@ -27,7 +28,7 @@ const DIVER_BLOODSTREAM_AMOUNT_REMAINING: f32 = 50.;
 const DIVER_INITIAL_OXYGEN: f32 = 0.21;
 const DIVER_INITIAL_NITROGEN: f32 = 0.78;
 
-const DIVER_INITIAL_INERT_GAS: f32 = 0.;
+const DIVER_INITIAL_PRESSURE: f32 = 0.;
 const DIVER_SAFE_OUTGASSING_AMOUNT: f32 = 20.;
 
 #[derive(Component)]
@@ -42,7 +43,7 @@ pub struct DiverBundle {
     depth: Depth,
     equipped_tank: EquippedTank,
     bloodstream_content: BloodstreamContent,
-    inert_gas_in_bloodstream: InertGasInBloodstream,
+    bloodstream_pressure: BloodstreamPressure,
     safe_outgassing_amount: SafeOutgassingAmount,
 }
 
@@ -61,7 +62,7 @@ impl DiverBundle {
                 proportion_of_oxygen: DIVER_INITIAL_OXYGEN,
                 proportion_of_nitrogen: DIVER_INITIAL_NITROGEN,
             },
-            inert_gas_in_bloodstream: InertGasInBloodstream(DIVER_INITIAL_INERT_GAS),
+            bloodstream_pressure: BloodstreamPressure(DIVER_INITIAL_PRESSURE),
             safe_outgassing_amount: SafeOutgassingAmount(DIVER_SAFE_OUTGASSING_AMOUNT),
         }
     }
