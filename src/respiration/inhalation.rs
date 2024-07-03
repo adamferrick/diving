@@ -1,4 +1,5 @@
 use crate::circulation::CirculateGas;
+use crate::helpers::weighted_average;
 use bevy::prelude::*;
 
 #[derive(Component)]
@@ -28,10 +29,6 @@ pub struct BreathTaken {
 pub fn inhalation_plugin(app: &mut App) {
     app.add_event::<BreathTaken>();
     app.add_systems(FixedUpdate, inhalation);
-}
-
-fn weighted_average(value_1: f32, weight_1: f32, value_2: f32, weight_2: f32) -> f32 {
-    (weight_1 * value_1 + weight_2 * value_2) / (weight_1 + weight_2)
 }
 
 pub fn inhalation(
