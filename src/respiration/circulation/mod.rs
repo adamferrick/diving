@@ -2,9 +2,11 @@ use bevy::prelude::*;
 
 pub mod decompression;
 pub mod equalization;
+pub mod intake;
 
 use decompression::*;
 use equalization::*;
+use intake::*;
 
 #[derive(Event)]
 pub struct CirculateGas {
@@ -16,5 +18,5 @@ pub struct CirculateGas {
 
 pub fn circulation_plugin(app: &mut App) {
     app.add_event::<CirculateGas>();
-    app.add_plugins((decompression_plugin, equalization_plugin));
+    app.add_plugins((decompression_plugin, equalization_plugin, intake_plugin));
 }

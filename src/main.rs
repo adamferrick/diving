@@ -11,7 +11,6 @@ use bevy::window::PrimaryWindow;
 pub mod collision;
 pub mod diver;
 pub mod health;
-pub mod helpers;
 pub mod position;
 pub mod projectile;
 pub mod respiration;

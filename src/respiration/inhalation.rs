@@ -1,5 +1,4 @@
 use crate::circulation::CirculateGas;
-use crate::helpers::weighted_average;
 use bevy::prelude::*;
 
 #[derive(Component)]
@@ -38,7 +37,7 @@ pub fn inhalation(
     mut circulate_gas: EventWriter<CirculateGas>,
 ) {
     for breath in breaths.read() {
-        if let Ok((entity, mut bloodstream_content, equipped_tank_id)) =
+        if let Ok((entity, bloodstream_content, equipped_tank_id)) =
             breathers.get_mut(breath.entity)
         {
             if let Ok(mut cylinder) = cylinders.get_mut(equipped_tank_id.0) {
@@ -46,26 +45,9 @@ pub fn inhalation(
                     - bloodstream_content.amount_remaining)
                     .min(cylinder.amount_remaining);
                 cylinder.amount_remaining -= amount_breathed;
-                bloodstream_content.proportion_of_oxygen = weighted_average(
-                    bloodstream_content.proportion_of_oxygen,
-                    bloodstream_content.amount_remaining,
-                    cylinder.proportion_of_oxygen,
-                    amount_breathed,
-                );
-                bloodstream_content.proportion_of_nitrogen = weighted_average(
-                    bloodstream_content.proportion_of_nitrogen,
-                    bloodstream_content.amount_remaining,
-                    cylinder.proportion_of_nitrogen,
-                    amount_breathed,
-                );
-                bloodstream_content.amount_remaining += amount_breathed;
                 println!(
-                    "amount breathed: {}, tank remaining: {}, bloodstream remaining: {}, oxygen: {}, nitrogen: {}",
-                    amount_breathed,
-                    cylinder.amount_remaining,
-                    bloodstream_content.amount_remaining,
-                    bloodstream_content.proportion_of_oxygen,
-                    bloodstream_content.proportion_of_nitrogen,
+                    "amount breathed: {}, tank remaining: {}",
+                    amount_breathed, cylinder.amount_remaining,
                 );
                 if amount_breathed > 0. {
                     circulate_gas.send(CirculateGas {
@@ -81,7 +63,7 @@ pub fn inhalation(
 }
 
 #[test]
-fn saturate_bloodstream() {
+fn did_inhale_full() {
     let mut app = App::new();
     app.add_event::<BreathTaken>();
     app.add_event::<CirculateGas>();
@@ -113,12 +95,6 @@ fn saturate_bloodstream() {
             entity: breather_id,
         });
     app.update();
-    // bloodstream_content proportion should be full
-    let new_bloodstream_content = app.world.get::<BloodstreamContent>(breather_id).unwrap();
-    assert_eq!(new_bloodstream_content.amount_remaining, 100.);
-    // bloodstream should be a fourth oxygen and a fourth nitrogen
-    assert_eq!(new_bloodstream_content.proportion_of_oxygen, 0.25);
-    assert_eq!(new_bloodstream_content.proportion_of_nitrogen, 0.25);
     // cylinder proportion should be half empty
     let new_cylinder = app.world.get::<DivingCylinder>(cylinder_id).unwrap();
     assert_eq!(new_cylinder.amount_remaining, 50.);
@@ -131,10 +107,11 @@ fn saturate_bloodstream() {
         .unwrap();
     assert_eq!(gas_to_circulate.entity, breather_id);
     assert_eq!(gas_to_circulate.amount, 50.);
+    assert_eq!(gas_to_circulate.proportion_of_oxygen, 0.5);
 }
 
 #[test]
-fn saturate_bloodstream_partial() {
+fn did_inhale_partial() {
     let mut app = App::new();
     app.add_event::<BreathTaken>();
     app.add_event::<CirculateGas>();
@@ -166,12 +143,6 @@ fn saturate_bloodstream_partial() {
             entity: breather_id,
         });
     app.update();
-    // bloodstream_content proportion should be 3/4ths full
-    let new_bloodstream_content = app.world.get::<BloodstreamContent>(breather_id).unwrap();
-    assert_eq!(new_bloodstream_content.amount_remaining, 75.);
-    // bloodstream content should be a third oxygen and a third nitrogen
-    assert_eq!(new_bloodstream_content.proportion_of_oxygen, 1. / 3.);
-    assert_eq!(new_bloodstream_content.proportion_of_nitrogen, 1. / 3.);
     // cylinder proportion should be empty
     let new_cylinder = app.world.get::<DivingCylinder>(cylinder_id).unwrap();
     assert_eq!(new_cylinder.amount_remaining, 0.);
@@ -184,10 +155,12 @@ fn saturate_bloodstream_partial() {
         .unwrap();
     assert_eq!(gas_to_circulate.entity, breather_id);
     assert_eq!(gas_to_circulate.amount, 50.);
+    assert_eq!(gas_to_circulate.proportion_of_oxygen, 0.5);
+    assert_eq!(gas_to_circulate.proportion_of_nitrogen, 0.5);
 }
 
 #[test]
-fn empty_cylinder() {
+fn did_not_inhale_empty_cylinder() {
     let mut app = App::new();
     app.add_event::<BreathTaken>();
     app.add_event::<CirculateGas>();
@@ -219,12 +192,6 @@ fn empty_cylinder() {
             entity: breather_id,
         });
     app.update();
-    // bloodstream_content proportion should unchanged
-    let new_bloodstream_content = app.world.get::<BloodstreamContent>(breather_id).unwrap();
-    assert_eq!(new_bloodstream_content.amount_remaining, 50.);
-    // should still be half oxygen and half nitrogen
-    assert_eq!(new_bloodstream_content.proportion_of_oxygen, 0.5);
-    assert_eq!(new_bloodstream_content.proportion_of_nitrogen, 0.5);
     // cylinder proportion still should be empty
     let new_cylinder = app.world.get::<DivingCylinder>(cylinder_id).unwrap();
     assert_eq!(new_cylinder.amount_remaining, 0.);
