@@ -10,6 +10,10 @@ const BAR_MSW_RATIO: f32 = 1. / 10.;
 #[derive(Component)]
 pub struct BloodstreamPressure(pub f32);
 
+impl Default for BloodstreamPressure {
+    fn default() -> Self { Self(1.) }
+}
+
 #[derive(Event)]
 pub struct Outgassing {
     pub entity: Entity,

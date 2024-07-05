@@ -2,11 +2,24 @@ use crate::circulation::*;
 use crate::health::*;
 use bevy::prelude::*;
 
+const DEFAULT_LOAD: f32 = 1.;
+const ASCENT_RATE: f32 = 1. / (64. * 60.);
+
 #[derive(Component)]
 pub struct GasExchangeInLungs {
     pub max_load: f32,
     pub load: f32,
     pub recovery_rate: f32,
+}
+
+impl Default for GasExchangeInLungs {
+    fn default() -> Self {
+        Self {
+            max_load: DEFAULT_LOAD,
+            load: 0.,
+            recovery_rate: ASCENT_RATE,
+        }
+    }
 }
 
 pub fn decompression_plugin(app: &mut App) {

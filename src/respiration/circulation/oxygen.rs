@@ -4,11 +4,24 @@ use crate::respiration::circulation::BloodstreamPressure;
 use crate::respiration::BloodstreamContent;
 use crate::DamageEvent;
 
+const MAX_PO2_HUMAN: f32 = 1.4;
+const MIN_PO2_HUMAN: f32 = 0.16;
+
 #[derive(Component)]
 pub struct OxygenHazard {
     po2_upper: f32,
     po2_lower: f32,
     damage_factor: f32,
+}
+
+impl Default for OxygenHazard {
+    fn default() -> Self {
+        Self {
+            po2_upper: MAX_PO2_HUMAN,
+            po2_lower: MIN_PO2_HUMAN,
+            damage_factor: 0.,
+        }
+    }
 }
 
 pub fn oxygen_plugin(app: &mut App) {

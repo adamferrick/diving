@@ -5,6 +5,7 @@ use crate::projectile::*;
 use crate::respiration::circulation::equalization::*;
 use crate::respiration::inhalation::*;
 use crate::CursorPosition;
+use crate::BreatherBundle;
 use bevy::prelude::*;
 use bevy::sprite::MaterialMesh2dBundle;
 
@@ -38,10 +39,8 @@ pub struct DiverBundle {
     hitbox: RectangularHitbox,
     health: Health,
     velocity: Velocity,
-    depth: Depth,
     equipped_tank: EquippedTank,
-    bloodstream_content: BloodstreamContent,
-    bloodstream_pressure: BloodstreamPressure,
+    breather_bundle: BreatherBundle,
 }
 
 impl DiverBundle {
@@ -51,15 +50,8 @@ impl DiverBundle {
             hitbox: RectangularHitbox(Rectangle::new(DIVER_WIDTH, DIVER_HEIGHT)),
             health: Health(100.),
             velocity: Velocity(Vec3::new(0., 0., 0.)),
-            depth: Depth(0.),
             equipped_tank: EquippedTank(tank),
-            bloodstream_content: BloodstreamContent {
-                capacity: DIVER_BLOODSTREAM_CAPACITY,
-                amount_remaining: DIVER_BLOODSTREAM_AMOUNT_REMAINING,
-                proportion_of_oxygen: DIVER_INITIAL_OXYGEN,
-                proportion_of_nitrogen: DIVER_INITIAL_NITROGEN,
-            },
-            bloodstream_pressure: BloodstreamPressure(DIVER_INITIAL_PRESSURE),
+            breather_bundle: BreatherBundle::default(),
         }
     }
 }

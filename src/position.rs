@@ -5,7 +5,7 @@ pub const SEA_LEVEL: f32 = 0.;
 #[derive(Component)]
 pub struct Velocity(pub Vec3);
 
-#[derive(Component)]
+#[derive(Component, Default)]
 pub struct Depth(pub f32);
 
 pub fn position_plugin(app: &mut App) {

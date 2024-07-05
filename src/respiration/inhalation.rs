@@ -1,12 +1,26 @@
 use crate::circulation::CirculateGas;
 use bevy::prelude::*;
 
+const AIR_O2_RATIO: f32 = 0.21;
+const AIR_N2_RATIO: f32 = 0.78;
+
 #[derive(Component)]
 pub struct DivingCylinder {
     pub capacity: f32,
     pub amount_remaining: f32,
     pub proportion_of_oxygen: f32,
     pub proportion_of_nitrogen: f32,
+}
+
+impl Default for DivingCylinder {
+    fn default() -> Self {
+        Self {
+            capacity: 0.,
+            amount_remaining: 0.,
+            proportion_of_oxygen: AIR_O2_RATIO,
+            proportion_of_nitrogen: AIR_N2_RATIO,
+        }
+    }
 }
 
 #[derive(Component)]
@@ -18,6 +32,17 @@ pub struct BloodstreamContent {
     pub amount_remaining: f32,
     pub proportion_of_oxygen: f32,
     pub proportion_of_nitrogen: f32,
+}
+
+impl Default for BloodstreamContent {
+    fn default() -> Self {
+        Self {
+            capacity: 0.,
+            amount_remaining: 0.,
+            proportion_of_oxygen: AIR_O2_RATIO,
+            proportion_of_nitrogen: AIR_N2_RATIO,
+        }
+    }
 }
 
 #[derive(Event)]

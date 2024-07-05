@@ -4,10 +4,21 @@ use crate::respiration::circulation::BloodstreamPressure;
 use crate::respiration::BloodstreamContent;
 use crate::DamageEvent;
 
+const PN2_NARCOSIS_THRESHOLD: f32 = 0.78 * (30. / 10. + 1.);
+
 #[derive(Component)]
 pub struct NitrogenHazard {
-    no2_upper: f32,
+    n2_upper: f32,
     damage_factor: f32,
+}
+
+impl Default for NitrogenHazard {
+    fn default() -> Self {
+        Self {
+            n2_upper: PN2_NARCOSIS_THRESHOLD,
+            damage_factor: 0.,
+        }
+    }
 }
 
 pub fn nitrogen_plugin(app: &mut App) {
@@ -26,11 +37,11 @@ pub fn nitrogen_narcosis(
     for (entity, nitrogen_hazard, bloodstream_pressure, bloodstream_content) in &breathers {
         let pressure_from_nitrogen =
             bloodstream_content.proportion_of_nitrogen * bloodstream_pressure.0;
-        if pressure_from_nitrogen > nitrogen_hazard.no2_upper {
+        if pressure_from_nitrogen > nitrogen_hazard.n2_upper {
             damage_events.send(DamageEvent {
                 target: entity,
                 damage: nitrogen_hazard.damage_factor
-                    * (pressure_from_nitrogen - nitrogen_hazard.no2_upper),
+                    * (pressure_from_nitrogen - nitrogen_hazard.n2_upper),
             });
         }
     }
@@ -45,7 +56,7 @@ fn did_narcosis_damage() {
         .world
         .spawn((
             NitrogenHazard {
-                no2_upper: 2.,
+                n2_upper: 2.,
                 damage_factor: 1.,
             },
             BloodstreamPressure(3.),
@@ -72,7 +83,7 @@ fn did_no_narcosis_damage() {
     app.add_systems(Update, nitrogen_narcosis);
     app.world.spawn((
         NitrogenHazard {
-            no2_upper: 2.,
+            n2_upper: 2.,
             damage_factor: 1.,
         },
         BloodstreamPressure(1.),

@@ -2,8 +2,14 @@ use crate::respiration::circulation::intake::*;
 use crate::respiration::BloodstreamContent;
 use bevy::prelude::*;
 
+const DEFAULT_USAGE_RATE: f32 = 1. / 64.;
+
 #[derive(Component)]
 pub struct GasUsageRate(pub f32);
+
+impl Default for GasUsageRate {
+    fn default() -> Self { Self(DEFAULT_USAGE_RATE) }
+}
 
 pub fn usage_plugin(app: &mut App) {
     app.add_systems(
