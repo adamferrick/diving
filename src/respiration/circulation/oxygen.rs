@@ -46,6 +46,12 @@ pub fn oxygen_damage(
                 damage: toxicity.damage_factor * (pressure_from_oxygen - toxicity.po2_upper),
             });
         } else if pressure_from_oxygen < toxicity.po2_lower {
+            println!(
+                "proportion_of_oxygen: {}, bloodstream_pressure: {}, hypoxia damage: {}",
+                bloodstream_content.proportion_of_oxygen,
+                bloodstream_pressure.0,
+                toxicity.damage_factor
+            );
             damage_events.send(DamageEvent {
                 target: entity,
                 damage: toxicity.damage_factor * (toxicity.po2_lower - pressure_from_oxygen),

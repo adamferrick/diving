@@ -51,7 +51,14 @@ impl DiverBundle {
             health: Health(100.),
             velocity: Velocity(Vec3::new(0., 0., 0.)),
             equipped_tank: EquippedTank(tank),
-            breather_bundle: BreatherBundle::default(),
+            breather_bundle: BreatherBundle {
+                bloodstream_content: BloodstreamContent {
+                    capacity: DIVER_BLOODSTREAM_CAPACITY,
+                    amount_remaining: DIVER_BLOODSTREAM_AMOUNT_REMAINING,
+                    ..default()
+                },
+                ..default()
+            },
         }
     }
 }
