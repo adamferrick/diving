@@ -10,7 +10,13 @@ pub struct GasExchangeInLungs {
 }
 
 pub fn decompression_plugin(app: &mut App) {
-    app.add_systems(FixedUpdate, (outgassing_load.after(equalize_pressure),));
+    app.add_systems(
+        FixedUpdate,
+        (
+            outgassing_load.after(equalize_pressure),
+            recover_gas_exchange_load.after(outgassing_load),
+        ),
+    );
 }
 
 pub fn outgassing_load(
@@ -74,11 +80,14 @@ fn harmless_outgassing() {
     app.add_systems(Update, outgassing_load);
     let breather_id = app
         .world
-        .spawn((GasExchangeInLungs {
-            max_load: 2.,
-            load: 0.,
-            recovery_rate: 0.,
-        }, Health(100.)))
+        .spawn((
+            GasExchangeInLungs {
+                max_load: 2.,
+                load: 0.,
+                recovery_rate: 0.,
+            },
+            Health(100.),
+        ))
         .id();
     app.world
         .resource_mut::<Events<Outgassing>>()
@@ -94,4 +103,44 @@ fn harmless_outgassing() {
     let mut damage_reader = damage_events.get_reader();
     let damage = damage_reader.read(damage_events).next();
     assert!(damage.is_none());
+}
+
+pub fn recover_gas_exchange_load(mut gas_exchangers: Query<&mut GasExchangeInLungs>) {
+    for mut gas_exchanger in &mut gas_exchangers {
+        gas_exchanger.load = (gas_exchanger.load - gas_exchanger.recovery_rate).max(0.);
+    }
+}
+
+#[test]
+fn did_recover() {
+    let mut app = App::new();
+    app.add_systems(Update, recover_gas_exchange_load);
+    let breather_id = app
+        .world
+        .spawn(GasExchangeInLungs {
+            max_load: 2.,
+            load: 1.,
+            recovery_rate: 0.5,
+        })
+        .id();
+    app.update();
+    let lungs = app.world.get::<GasExchangeInLungs>(breather_id).unwrap();
+    assert_eq!(lungs.load, 0.5);
+}
+
+#[test]
+fn fully_recovered() {
+    let mut app = App::new();
+    app.add_systems(Update, recover_gas_exchange_load);
+    let breather_id = app
+        .world
+        .spawn(GasExchangeInLungs {
+            max_load: 2.,
+            load: 0.,
+            recovery_rate: 0.5,
+        })
+        .id();
+    app.update();
+    let lungs = app.world.get::<GasExchangeInLungs>(breather_id).unwrap();
+    assert_eq!(lungs.load, 0.);
 }
