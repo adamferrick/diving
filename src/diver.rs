@@ -4,8 +4,8 @@ use crate::position::*;
 use crate::projectile::*;
 use crate::respiration::circulation::equalization::*;
 use crate::respiration::inhalation::*;
-use crate::CursorPosition;
 use crate::BreatherBundle;
+use crate::CursorPosition;
 use bevy::prelude::*;
 use bevy::sprite::MaterialMesh2dBundle;
 

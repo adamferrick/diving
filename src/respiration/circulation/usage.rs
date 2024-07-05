@@ -8,7 +8,9 @@ const DEFAULT_USAGE_RATE: f32 = 1. / 64.;
 pub struct GasUsageRate(pub f32);
 
 impl Default for GasUsageRate {
-    fn default() -> Self { Self(DEFAULT_USAGE_RATE) }
+    fn default() -> Self {
+        Self(DEFAULT_USAGE_RATE)
+    }
 }
 
 pub fn usage_plugin(app: &mut App) {

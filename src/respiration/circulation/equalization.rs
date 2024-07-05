@@ -11,7 +11,9 @@ const BAR_MSW_RATIO: f32 = 1. / 10.;
 pub struct BloodstreamPressure(pub f32);
 
 impl Default for BloodstreamPressure {
-    fn default() -> Self { Self(1.) }
+    fn default() -> Self {
+        Self(1.)
+    }
 }
 
 #[derive(Event)]
