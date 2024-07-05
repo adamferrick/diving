@@ -4,6 +4,9 @@ use crate::respiration::circulation::*;
 use crate::respiration::BloodstreamContent;
 use crate::Depth;
 
+const ATMOSPHERIC_PRESSURE_BAR: f32 = 1.;
+const BAR_MSW_RATIO: f32 = 1. / 10.;
+
 #[derive(Component)]
 pub struct BloodstreamPressure(pub f32);
 
@@ -40,10 +43,11 @@ pub fn equalize_pressure(
         if let Ok((breather_entity, mut bloodstream_pressure, bloodstream_content, depth)) =
             breathers.get_mut(gas_to_circulate.entity)
         {
+            let pressure_at_current_depth = ATMOSPHERIC_PRESSURE_BAR + BAR_MSW_RATIO * depth.0;
             let new_bloodstream_pressure = weighted_average(
                 bloodstream_pressure.0,
                 bloodstream_content.amount_remaining,
-                depth.0,
+                pressure_at_current_depth,
                 gas_to_circulate.amount,
             );
             let delta = new_bloodstream_pressure - bloodstream_pressure.0;
@@ -88,12 +92,12 @@ fn did_equalize_pressure_absorption() {
     app.update();
     // should have equalized the pressure
     let new_bloodstream_pressure = app.world.get::<BloodstreamPressure>(breather_id).unwrap();
-    assert_eq!(new_bloodstream_pressure.0, 25.);
+    assert_eq!(new_bloodstream_pressure.0, 2.75);
     // should not have sent an outgassing event (gas should have been absorbed)
     let outgassing_events = app.world.resource::<Events<Outgassing>>();
     let mut outgassing_reader = outgassing_events.get_reader();
-    let outgassings = outgassing_reader.read(outgassing_events).next();
-    assert!(outgassings.is_none());
+    let outgassing = outgassing_reader.read(outgassing_events).next();
+    assert!(outgassing.is_none());
 }
 
 #[test]
@@ -105,14 +109,14 @@ fn did_equalize_pressure_outgassing() {
     let breather_id = app
         .world
         .spawn((
-            BloodstreamPressure(0.),
+            BloodstreamPressure(2.),
             BloodstreamContent {
                 capacity: 100.,
                 amount_remaining: 75.,
                 proportion_of_oxygen: 0.,
                 proportion_of_nitrogen: 0.,
             },
-            Depth(100.),
+            Depth(0.),
         ))
         .id();
     app.world
@@ -125,7 +129,13 @@ fn did_equalize_pressure_outgassing() {
         });
     app.update();
     let new_bloodstream_pressure = app.world.get::<BloodstreamPressure>(breather_id).unwrap();
-    assert_eq!(new_bloodstream_pressure.0, 25.);
+    assert_eq!(new_bloodstream_pressure.0, 1.75);
+    // should have sent an outgassing event
+    let outgassing_events = app.world.resource::<Events<Outgassing>>();
+    let mut outgassing_reader = outgassing_events.get_reader();
+    let outgassing = outgassing_reader.read(outgassing_events).next().unwrap();
+    assert_eq!(outgassing.entity, breather_id);
+    assert_eq!(outgassing.amount, 0.25);
 }
 
 pub fn equalize_gases(
