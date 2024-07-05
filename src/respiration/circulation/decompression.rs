@@ -14,7 +14,7 @@ pub fn decompression_plugin(app: &mut App) {
         FixedUpdate,
         (
             outgassing_load.after(equalize_pressure),
-            recover_gas_exchange_load.after(outgassing_load),
+            outgassing_deload.after(outgassing_load),
         ),
     );
 }
@@ -105,16 +105,16 @@ fn harmless_outgassing() {
     assert!(damage.is_none());
 }
 
-pub fn recover_gas_exchange_load(mut gas_exchangers: Query<&mut GasExchangeInLungs>) {
+pub fn outgassing_deload(mut gas_exchangers: Query<&mut GasExchangeInLungs>) {
     for mut gas_exchanger in &mut gas_exchangers {
         gas_exchanger.load = (gas_exchanger.load - gas_exchanger.recovery_rate).max(0.);
     }
 }
 
 #[test]
-fn did_recover() {
+fn did_deload() {
     let mut app = App::new();
-    app.add_systems(Update, recover_gas_exchange_load);
+    app.add_systems(Update, outgassing_deload);
     let breather_id = app
         .world
         .spawn(GasExchangeInLungs {
@@ -129,9 +129,9 @@ fn did_recover() {
 }
 
 #[test]
-fn fully_recovered() {
+fn fully_deloaded() {
     let mut app = App::new();
-    app.add_systems(Update, recover_gas_exchange_load);
+    app.add_systems(Update, outgassing_deload);
     let breather_id = app
         .world
         .spawn(GasExchangeInLungs {
