@@ -3,24 +3,31 @@ use crate::health::*;
 use bevy::prelude::*;
 
 #[derive(Component)]
-pub struct SafeOutgassingAmount(pub f32);
+pub struct GasExchangeInLungs {
+    pub max_load: f32,
+    pub load: f32,
+    pub recovery_rate: f32,
+}
 
 pub fn decompression_plugin(app: &mut App) {
-    app.add_systems(FixedUpdate, (outgassing_damage.after(equalize_pressure),));
+    app.add_systems(FixedUpdate, (outgassing_load.after(equalize_pressure),));
 }
-pub fn outgassing_damage(
-    breathers: Query<&SafeOutgassingAmount, With<Health>>,
+
+pub fn outgassing_load(
+    mut breathers: Query<&mut GasExchangeInLungs, With<Health>>,
     mut bloodstream_outgassings: EventReader<Outgassing>,
     mut damage_events: EventWriter<DamageEvent>,
 ) {
     for bloodstream_outgassing in bloodstream_outgassings.read() {
-        if let Ok(safe_outgassing_amount) = breathers.get(bloodstream_outgassing.entity) {
-            if bloodstream_outgassing.amount > safe_outgassing_amount.0 {
+        if let Ok(mut lungs) = breathers.get_mut(bloodstream_outgassing.entity) {
+            lungs.load += bloodstream_outgassing.amount;
+            if lungs.load > lungs.max_load {
                 damage_events.send(DamageEvent {
                     target: bloodstream_outgassing.entity,
-                    damage: bloodstream_outgassing.amount - safe_outgassing_amount.0,
+                    damage: lungs.load - lungs.max_load,
                 });
             }
+            lungs.load = lungs.load.min(lungs.max_load);
         }
     }
 }
@@ -30,24 +37,33 @@ fn harmful_outgassing() {
     let mut app = App::new();
     app.add_event::<Outgassing>();
     app.add_event::<DamageEvent>();
-    app.add_systems(Update, outgassing_damage);
+    app.add_systems(Update, outgassing_load);
     let breather_id = app
         .world
-        .spawn((SafeOutgassingAmount(20.), Health(100.)))
+        .spawn((
+            GasExchangeInLungs {
+                max_load: 2.,
+                load: 0.,
+                recovery_rate: 0.,
+            },
+            Health(100.),
+        ))
         .id();
     app.world
         .resource_mut::<Events<Outgassing>>()
         .send(Outgassing {
             entity: breather_id,
-            amount: 50.,
+            amount: 3.,
         });
     app.update();
+    let lungs = app.world.get::<GasExchangeInLungs>(breather_id).unwrap();
+    assert_eq!(lungs.load, 2.);
     // should send a DamageEvent
     let damage_events = app.world.resource::<Events<DamageEvent>>();
     let mut damage_reader = damage_events.get_reader();
     let damage = damage_reader.read(damage_events).next().unwrap();
     assert_eq!(damage.target, breather_id);
-    assert_eq!(damage.damage, 30.);
+    assert_eq!(damage.damage, 1.);
 }
 
 #[test]
@@ -55,18 +71,24 @@ fn harmless_outgassing() {
     let mut app = App::new();
     app.add_event::<Outgassing>();
     app.add_event::<DamageEvent>();
-    app.add_systems(Update, outgassing_damage);
+    app.add_systems(Update, outgassing_load);
     let breather_id = app
         .world
-        .spawn((SafeOutgassingAmount(20.), Health(100.)))
+        .spawn((GasExchangeInLungs {
+            max_load: 2.,
+            load: 0.,
+            recovery_rate: 0.,
+        }, Health(100.)))
         .id();
     app.world
         .resource_mut::<Events<Outgassing>>()
         .send(Outgassing {
             entity: breather_id,
-            amount: 15.,
+            amount: 1.,
         });
     app.update();
+    let lungs = app.world.get::<GasExchangeInLungs>(breather_id).unwrap();
+    assert_eq!(lungs.load, 1.);
     // should not send a DamageEvent
     let damage_events = app.world.resource::<Events<DamageEvent>>();
     let mut damage_reader = damage_events.get_reader();
