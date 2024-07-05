@@ -41,6 +41,12 @@ pub fn oxygen_damage(
         let pressure_from_oxygen =
             bloodstream_content.proportion_of_oxygen * bloodstream_pressure.0;
         if pressure_from_oxygen > toxicity.po2_upper {
+            println!(
+                "proportion_of_oxygen: {}, bloodstream_pressure: {}, toxicity damage: {}",
+                bloodstream_content.proportion_of_oxygen,
+                bloodstream_pressure.0,
+                toxicity.damage_factor
+            );
             damage_events.send(DamageEvent {
                 target: entity,
                 damage: toxicity.damage_factor * (pressure_from_oxygen - toxicity.po2_upper),
