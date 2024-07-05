@@ -3,12 +3,14 @@ use bevy::prelude::*;
 pub mod decompression;
 pub mod equalization;
 pub mod intake;
+pub mod nitrogen;
 pub mod oxygen;
 pub mod usage;
 
 use decompression::*;
 use equalization::*;
 use intake::*;
+use nitrogen::*;
 use oxygen::*;
 use usage::*;
 
@@ -27,6 +29,7 @@ pub fn circulation_plugin(app: &mut App) {
         equalization_plugin,
         intake_plugin,
         oxygen_plugin,
+        nitrogen_plugin,
         usage_plugin,
     ));
 }
