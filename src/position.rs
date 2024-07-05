@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 
 pub const SEA_LEVEL: f32 = 0.;
+const METERS_TRANSLATION_RATIO: f32 = 10.;
 
 #[derive(Component)]
 pub struct Velocity(pub Vec3);
@@ -42,7 +43,7 @@ fn did_update_position() {
 
 pub fn update_depth(mut submerged_objects: Query<(&mut Depth, &Transform)>) {
     for (mut depth, transform) in &mut submerged_objects {
-        depth.0 = (SEA_LEVEL - transform.translation.y).max(0.);
+        depth.0 = (SEA_LEVEL - transform.translation.y).max(0.) / METERS_TRANSLATION_RATIO;
     }
 }
 
@@ -62,7 +63,7 @@ fn depth_below_sea_level() {
     app.update();
     let new_depth = app.world.get::<Depth>(movable_id).unwrap().0;
 
-    assert!(new_depth == 100.);
+    assert!(new_depth == 100. / METERS_TRANSLATION_RATIO);
 }
 
 #[test]
