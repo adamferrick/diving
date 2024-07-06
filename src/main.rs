@@ -1,21 +1,21 @@
 use crate::collision::*;
 use crate::diver::*;
+use crate::fauna::*;
 use crate::health::*;
 use crate::position::*;
 use crate::projectile::*;
 use crate::respiration::*;
-use crate::fauna::*;
 use crate::ui::*;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 
 pub mod collision;
 pub mod diver;
+pub mod fauna;
 pub mod health;
 pub mod position;
 pub mod projectile;
 pub mod respiration;
-pub mod fauna;
 pub mod ui;
 
 #[derive(Resource, Default)]
