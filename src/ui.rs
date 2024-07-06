@@ -73,7 +73,7 @@ pub fn update_health_ui(
 ) {
     for mut text in &mut texts {
         if let Ok(health) = health_query.get_single() {
-            text.sections[0].value = format!("Health: {}", health.0);
+            text.sections[0].value = format!("Health: {0:.0}", health.0);
         }
     }
 }
@@ -85,7 +85,7 @@ pub fn update_respiration_ui(
     for mut text in &mut texts {
         if let Ok(bloodstream) = bloodstream_query.get_single() {
             text.sections[0].value = format!(
-                "Air remaining: {}%",
+                "Air remaining: {0:.0}%",
                 (bloodstream.amount_remaining / bloodstream.capacity) * 100.
             );
         }
