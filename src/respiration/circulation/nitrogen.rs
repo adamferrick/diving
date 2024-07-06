@@ -38,7 +38,12 @@ pub fn nitrogen_narcosis(
         let pressure_from_nitrogen =
             bloodstream_content.proportion_of_nitrogen * bloodstream_pressure.0;
         if pressure_from_nitrogen > nitrogen_hazard.n2_upper {
-            println!("proportion of nitrogen: {}, pressure: {}, damage: {}", bloodstream_content.proportion_of_nitrogen, bloodstream_pressure.0, nitrogen_hazard.damage_factor);
+            println!(
+                "proportion of nitrogen: {}, pressure: {}, damage: {}",
+                bloodstream_content.proportion_of_nitrogen,
+                bloodstream_pressure.0,
+                nitrogen_hazard.damage_factor
+            );
             damage_events.send(DamageEvent {
                 target: entity,
                 damage: nitrogen_hazard.damage_factor
