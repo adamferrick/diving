@@ -4,6 +4,7 @@ use crate::health::*;
 use crate::position::*;
 use crate::projectile::*;
 use crate::respiration::*;
+use crate::fauna::*;
 use crate::ui::*;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
@@ -14,6 +15,7 @@ pub mod health;
 pub mod position;
 pub mod projectile;
 pub mod respiration;
+pub mod fauna;
 pub mod ui;
 
 #[derive(Resource, Default)]
@@ -32,6 +34,7 @@ fn main() {
             position_plugin,
             projectile_plugin,
             respiration_plugin,
+            fauna_plugin,
             ui_plugin,
         ))
         .init_resource::<CursorPosition>()
