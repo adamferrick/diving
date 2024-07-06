@@ -2,7 +2,6 @@ use crate::collision::*;
 use crate::health::*;
 use crate::position::*;
 use crate::projectile::*;
-use crate::respiration::circulation::equalization::*;
 use crate::respiration::inhalation::*;
 use crate::BreatherBundle;
 use crate::CursorPosition;
@@ -25,10 +24,6 @@ const DIVER_TANK_NITROGEN: f32 = 0.78;
 
 const DIVER_BLOODSTREAM_CAPACITY: f32 = 100.;
 const DIVER_BLOODSTREAM_AMOUNT_REMAINING: f32 = 50.;
-const DIVER_INITIAL_OXYGEN: f32 = 0.21;
-const DIVER_INITIAL_NITROGEN: f32 = 0.78;
-
-const DIVER_INITIAL_PRESSURE: f32 = 0.;
 
 #[derive(Component)]
 pub struct Diver;
