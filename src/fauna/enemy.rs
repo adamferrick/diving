@@ -1,10 +1,15 @@
+use bevy::prelude::*;
+use bevy::sprite::MaterialMesh2dBundle;
+
 use crate::Diver;
 use crate::Health;
 use crate::RectangularHitbox;
 use crate::Velocity;
-use bevy::prelude::*;
 
 const ENEMY_SPEED: f32 = 1.1;
+const ENEMY_WIDTH: f32 = 20.;
+const ENEMY_HEIGHT: f32 = 20.;
+const ENEMY_HEALTH: f32 = 40.;
 
 #[derive(Component)]
 pub struct Enemy;
@@ -17,8 +22,45 @@ pub struct EnemyBundle {
     velocity: Velocity,
 }
 
+impl EnemyBundle {
+    fn new() -> Self {
+        Self {
+            enemy: Enemy,
+            hitbox: RectangularHitbox(Rectangle::new(ENEMY_WIDTH, ENEMY_HEIGHT)),
+            health: Health(ENEMY_HEALTH),
+            velocity: Velocity(Vec3::new(0., 0., 0.)),
+        }
+    }
+}
+
 pub fn enemy_plugin(app: &mut App) {
+    app.add_systems(Startup, spawn_enemies);
     app.add_systems(FixedUpdate, enemy_seek_diver);
+}
+
+pub fn spawn_enemies(
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+) {
+    let mut spawn_enemy = |x: f32, y: f32| {
+        let mesh = Mesh::from(Rectangle::new(ENEMY_WIDTH, ENEMY_HEIGHT));
+        let material = ColorMaterial::from(Color::rgb(0., 0., 1.));
+        let mesh_handle = meshes.add(mesh);
+        let material_handle = materials.add(material);
+        commands.spawn((
+            EnemyBundle::new(),
+            MaterialMesh2dBundle {
+                mesh: mesh_handle.into(),
+                material: material_handle,
+                transform: Transform::from_translation(Vec3::new(x, y, 0.)),
+                ..default()
+            },
+        ));
+    };
+
+    spawn_enemy(-100., 0.);
+    spawn_enemy(0., -100.);
 }
 
 pub fn enemy_seek_diver(
@@ -46,10 +88,8 @@ fn did_seek_diver() {
             Enemy,
         ))
         .id();
-    app.world.spawn((
-        Transform::from_translation(Vec3::new(1., 1., 0.)),
-        Diver,
-    ));
+    app.world
+        .spawn((Transform::from_translation(Vec3::new(1., 1., 0.)), Diver));
     app.update();
     let enemy_velocity = app.world.get::<Velocity>(enemy_id).unwrap();
     assert_eq!(enemy_velocity.0, Vec3::new(1., 1., 0.).normalize() * 1.1);
@@ -67,10 +107,8 @@ fn enemy_on_diver() {
             Enemy,
         ))
         .id();
-    app.world.spawn((
-        Transform::from_translation(Vec3::ZERO),
-        Diver,
-    ));
+    app.world
+        .spawn((Transform::from_translation(Vec3::ZERO), Diver));
     app.update();
     let enemy_velocity = app.world.get::<Velocity>(enemy_id).unwrap();
     assert_eq!(enemy_velocity.0, Vec3::ZERO);
