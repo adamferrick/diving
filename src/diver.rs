@@ -24,11 +24,16 @@ const DIVER_TANK_AMOUNT_REMAINING: f32 = 800.;
 const DIVER_TANK_OXYGEN: f32 = 0.21;
 const DIVER_TANK_NITROGEN: f32 = 0.78;
 
+const DIVER_INITIAL_AMMO: u32 = 10;
+
 const DIVER_BLOODSTREAM_CAPACITY: f32 = 100.;
 const DIVER_BLOODSTREAM_AMOUNT_REMAINING: f32 = 50.;
 
 #[derive(Component)]
 pub struct Diver;
+
+#[derive(Component)]
+pub struct Ammo(pub u32);
 
 #[derive(Bundle)]
 pub struct DiverBundle {
@@ -38,6 +43,7 @@ pub struct DiverBundle {
     velocity: Velocity,
     drag: Drag,
     equipped_tank: EquippedTank,
+    ammo: Ammo,
     breather_bundle: BreatherBundle,
 }
 
@@ -50,6 +56,7 @@ impl DiverBundle {
             velocity: Velocity(Vec3::new(0., 0., 0.)),
             drag: Drag(DIVER_DRAG),
             equipped_tank: EquippedTank(tank),
+            ammo: Ammo(DIVER_INITIAL_AMMO),
             breather_bundle: BreatherBundle {
                 bloodstream_content: BloodstreamContent {
                     capacity: DIVER_BLOODSTREAM_CAPACITY,
@@ -132,11 +139,11 @@ pub fn player_control_velocity(
 pub fn fire_speargun(
     buttons: Res<ButtonInput<MouseButton>>,
     cursor_position: Res<CursorPosition>,
-    diver: Query<(&Transform, &Velocity), With<Diver>>,
+    mut diver: Query<(&Transform, &Velocity, &mut Ammo), With<Diver>>,
     mut fire_events: EventWriter<FireProjectile>,
 ) {
-    if let Ok((transform, velocity)) = diver.get_single() {
-        if buttons.just_pressed(MouseButton::Left) {
+    if let Ok((transform, velocity, mut ammo)) = diver.get_single_mut() {
+        if buttons.just_pressed(MouseButton::Left) && ammo.0 > 0 {
             let diver_position = Vec2::new(transform.translation.x, transform.translation.y);
             if let Some(direction) = (cursor_position.0 - diver_position).try_normalize() {
                 let spawn_position = diver_position + SPEAR_FIRE_RADIUS * direction;
@@ -151,6 +158,7 @@ pub fn fire_speargun(
                     damage: SPEAR_DAMAGE,
                 });
             }
+            ammo.0 -= 1;
         }
     }
 }
@@ -161,11 +169,12 @@ fn did_fire_speargun() {
     app.add_systems(Update, fire_speargun);
     app.add_event::<FireProjectile>();
 
-    app.world.spawn((
+    let shooter = app.world.spawn((
         Diver,
         Velocity(Vec3::ZERO),
+        Ammo(2),
         Transform::from_translation(Vec3::ZERO),
-    ));
+    )).id();
 
     app.insert_resource(CursorPosition(Vec2::ONE));
     let mut mouse = ButtonInput::<MouseButton>::default();
@@ -173,6 +182,8 @@ fn did_fire_speargun() {
     app.insert_resource(mouse);
 
     app.update();
+    let ammo = app.world.get::<Ammo>(shooter).unwrap();
+    assert_eq!(ammo.0, 1);
     // should have sent an event
     let speargun_fire_events = app.world.resource::<Events<FireProjectile>>();
     let reader = speargun_fire_events.get_reader();
@@ -183,6 +194,34 @@ fn did_fire_speargun() {
     // should not have sent an event
     let speargun_fire_events = app.world.resource::<Events<FireProjectile>>();
     assert_eq!(speargun_fire_events.len(), 1);
+}
+
+#[test]
+fn did_not_fire_speargun_no_ammo() {
+    let mut app = App::new();
+    app.add_systems(Update, fire_speargun);
+    app.add_event::<FireProjectile>();
+
+    let shooter = app.world.spawn((
+        Diver,
+        Velocity(Vec3::ZERO),
+        Ammo(0),
+        Transform::from_translation(Vec3::ZERO),
+    )).id();
+
+    app.insert_resource(CursorPosition(Vec2::ONE));
+    let mut mouse = ButtonInput::<MouseButton>::default();
+    mouse.press(MouseButton::Left);
+    app.insert_resource(mouse);
+
+    app.update();
+    let ammo = app.world.get::<Ammo>(shooter).unwrap();
+    assert_eq!(ammo.0, 0);
+    // should not have sent an event
+    let speargun_fire_events = app.world.resource::<Events<FireProjectile>>();
+    let mut speargun_fire_reader = speargun_fire_events.get_reader();
+    let speargun_fire = speargun_fire_reader.read(speargun_fire_events).next();
+    assert!(speargun_fire.is_none());
 }
 
 pub fn player_inhale(
