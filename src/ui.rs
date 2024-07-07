@@ -9,9 +9,6 @@ const FONT_SIZE: f32 = 32.;
 pub struct HealthText;
 
 #[derive(Component)]
-pub struct AmmoText;
-
-#[derive(Component)]
 pub struct CirculationText;
 
 pub fn ui_plugin(app: &mut App) {
@@ -21,7 +18,6 @@ pub fn ui_plugin(app: &mut App) {
         (
             update_health_ui.after(damage_health),
             update_respiration_ui.after(inhalation),
-            update_ammo_ui.after(fire_speargun),
         ),
     );
 }
@@ -46,19 +42,6 @@ pub fn spawn_health_ui(mut commands: Commands) {
         .with_children(|commands| {
             commands.spawn((
                 HealthText,
-                TextBundle {
-                    text: Text::from_section(
-                        "",
-                        TextStyle {
-                            font_size: FONT_SIZE,
-                            ..default()
-                        },
-                    ),
-                    ..default()
-                },
-            ));
-            commands.spawn((
-                AmmoText,
                 TextBundle {
                     text: Text::from_section(
                         "",
@@ -111,17 +94,6 @@ pub fn update_respiration_ui(
                     (cylinder.amount_remaining / cylinder.capacity) * 100.,
                 );
             }
-        }
-    }
-}
-
-pub fn update_ammo_ui(
-    mut texts: Query<&mut Text, With<AmmoText>>,
-    ammo_query: Query<&Ammo, With<Diver>>,
-) {
-    for mut text in &mut texts {
-        if let Ok(ammo) = ammo_query.get_single() {
-            text.sections[0].value = format!("Ammo: {0:.0}", ammo.0);
         }
     }
 }
