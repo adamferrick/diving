@@ -5,10 +5,12 @@ use crate::projectile::*;
 use crate::respiration::inhalation::*;
 use crate::BreatherBundle;
 use crate::CursorPosition;
+use crate::Drag;
 use bevy::prelude::*;
 use bevy::sprite::MaterialMesh2dBundle;
 
 const DIVER_SPEED: f32 = 1.;
+const DIVER_DRAG: f32 = 0.9;
 const DIVER_WIDTH: f32 = 20.;
 const DIVER_HEIGHT: f32 = 20.;
 
@@ -34,6 +36,7 @@ pub struct DiverBundle {
     hitbox: RectangularHitbox,
     health: Health,
     velocity: Velocity,
+    drag: Drag,
     equipped_tank: EquippedTank,
     breather_bundle: BreatherBundle,
 }
@@ -45,6 +48,7 @@ impl DiverBundle {
             hitbox: RectangularHitbox(Rectangle::new(DIVER_WIDTH, DIVER_HEIGHT)),
             health: Health(100.),
             velocity: Velocity(Vec3::new(0., 0., 0.)),
+            drag: Drag(DIVER_DRAG),
             equipped_tank: EquippedTank(tank),
             breather_bundle: BreatherBundle {
                 bloodstream_content: BloodstreamContent {
@@ -115,16 +119,12 @@ pub fn player_control_velocity(
             velocity.0.y = DIVER_SPEED;
         } else if buttons.pressed(KeyCode::ArrowDown) {
             velocity.0.y = -DIVER_SPEED;
-        } else {
-            velocity.0.y = 0.;
         }
 
         if buttons.pressed(KeyCode::ArrowLeft) {
             velocity.0.x = -DIVER_SPEED;
         } else if buttons.pressed(KeyCode::ArrowRight) {
             velocity.0.x = DIVER_SPEED;
-        } else {
-            velocity.0.x = 0.;
         }
     }
 }
