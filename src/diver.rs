@@ -169,12 +169,15 @@ fn did_fire_speargun() {
     app.add_systems(Update, fire_speargun);
     app.add_event::<FireProjectile>();
 
-    let shooter = app.world.spawn((
-        Diver,
-        Velocity(Vec3::ZERO),
-        Ammo(2),
-        Transform::from_translation(Vec3::ZERO),
-    )).id();
+    let shooter = app
+        .world
+        .spawn((
+            Diver,
+            Velocity(Vec3::ZERO),
+            Ammo(2),
+            Transform::from_translation(Vec3::ZERO),
+        ))
+        .id();
 
     app.insert_resource(CursorPosition(Vec2::ONE));
     let mut mouse = ButtonInput::<MouseButton>::default();
@@ -202,12 +205,15 @@ fn did_not_fire_speargun_no_ammo() {
     app.add_systems(Update, fire_speargun);
     app.add_event::<FireProjectile>();
 
-    let shooter = app.world.spawn((
-        Diver,
-        Velocity(Vec3::ZERO),
-        Ammo(0),
-        Transform::from_translation(Vec3::ZERO),
-    )).id();
+    let shooter = app
+        .world
+        .spawn((
+            Diver,
+            Velocity(Vec3::ZERO),
+            Ammo(0),
+            Transform::from_translation(Vec3::ZERO),
+        ))
+        .id();
 
     app.insert_resource(CursorPosition(Vec2::ONE));
     let mut mouse = ButtonInput::<MouseButton>::default();
