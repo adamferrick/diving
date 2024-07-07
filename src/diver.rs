@@ -1,6 +1,7 @@
 use crate::collision::*;
 use crate::drag::Drag;
 use crate::health::*;
+use crate::inventory::collectible::*;
 use crate::position::*;
 use crate::projectile::*;
 use crate::respiration::inhalation::*;
@@ -19,6 +20,8 @@ const SPEAR_INITIAL_VELOCITY: f32 = 5.;
 const SPEAR_DAMAGE: f32 = 40.;
 const SPEAR_FIRE_RADIUS: f32 = 40.;
 
+const DIVER_INITIAL_AMMO: u32 = 3;
+
 const DIVER_TANK_CAPACITY: f32 = 1000.;
 const DIVER_TANK_AMOUNT_REMAINING: f32 = 800.;
 const DIVER_TANK_OXYGEN: f32 = 0.21;
@@ -30,6 +33,9 @@ const DIVER_BLOODSTREAM_AMOUNT_REMAINING: f32 = 50.;
 #[derive(Component)]
 pub struct Diver;
 
+#[derive(Component)]
+pub struct EquippedAmmo(pub Entity);
+
 #[derive(Bundle)]
 pub struct DiverBundle {
     diver: Diver,
@@ -38,11 +44,12 @@ pub struct DiverBundle {
     velocity: Velocity,
     drag: Drag,
     equipped_tank: EquippedTank,
+    equipped_ammo: EquippedAmmo,
     breather_bundle: BreatherBundle,
 }
 
 impl DiverBundle {
-    fn new(tank: Entity) -> Self {
+    fn new(tank: Entity, ammo: Entity) -> Self {
         Self {
             diver: Diver,
             hitbox: RectangularHitbox(Rectangle::new(DIVER_WIDTH, DIVER_HEIGHT)),
@@ -50,6 +57,7 @@ impl DiverBundle {
             velocity: Velocity(Vec3::new(0., 0., 0.)),
             drag: Drag(DIVER_DRAG),
             equipped_tank: EquippedTank(tank),
+            equipped_ammo: EquippedAmmo(ammo),
             breather_bundle: BreatherBundle {
                 bloodstream_content: BloodstreamContent {
                     capacity: DIVER_BLOODSTREAM_CAPACITY,
@@ -99,8 +107,12 @@ pub fn spawn_diver(
         })
         .id();
 
+    let ammo_id = commands
+        .spawn((Collectible, Ammo::Finite(DIVER_INITIAL_AMMO)))
+        .id();
+
     commands.spawn((
-        DiverBundle::new(cylinder_id),
+        DiverBundle::new(cylinder_id, ammo_id),
         MaterialMesh2dBundle {
             mesh: mesh_handle.into(),
             material: material_handle,
@@ -132,10 +144,10 @@ pub fn player_control_velocity(
 pub fn fire_speargun(
     buttons: Res<ButtonInput<MouseButton>>,
     cursor_position: Res<CursorPosition>,
-    diver: Query<(&Transform, &Velocity), With<Diver>>,
+    diver: Query<(&Transform, &Velocity, &EquippedAmmo), With<Diver>>,
     mut fire_events: EventWriter<FireProjectile>,
 ) {
-    if let Ok((transform, velocity)) = diver.get_single() {
+    if let Ok((transform, velocity, ammo)) = diver.get_single() {
         if buttons.just_pressed(MouseButton::Left) {
             let diver_position = Vec2::new(transform.translation.x, transform.translation.y);
             if let Some(direction) = (cursor_position.0 - diver_position).try_normalize() {
@@ -149,6 +161,7 @@ pub fn fire_speargun(
                     ),
                     dims: Rectangle::new(SPEAR_SIZE, SPEAR_SIZE),
                     damage: SPEAR_DAMAGE,
+                    ammo: ammo.0,
                 });
             }
         }
@@ -161,13 +174,14 @@ fn did_fire_speargun() {
     app.add_systems(Update, fire_speargun);
     app.add_event::<FireProjectile>();
 
-    app
-        .world
-        .spawn((
-            Diver,
-            Velocity(Vec3::ZERO),
-            Transform::from_translation(Vec3::ZERO),
-        ));
+    let ammo_id = app.world.spawn(Ammo::Infinite).id();
+
+    app.world.spawn((
+        Diver,
+        Velocity(Vec3::ZERO),
+        Transform::from_translation(Vec3::ZERO),
+        EquippedAmmo(ammo_id),
+    ));
 
     app.insert_resource(CursorPosition(Vec2::ONE));
     let mut mouse = ButtonInput::<MouseButton>::default();

@@ -11,6 +11,7 @@ use bevy::window::PrimaryWindow;
 pub mod diver;
 pub mod fauna;
 pub mod health;
+pub mod inventory;
 pub mod physics;
 pub mod projectile;
 pub mod respiration;
