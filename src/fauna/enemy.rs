@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy::sprite::MaterialMesh2dBundle;
 
+use crate::Dead;
 use crate::Diver;
 use crate::Health;
 use crate::RectangularHitbox;
@@ -65,7 +66,7 @@ pub fn spawn_enemies(
 
 pub fn enemy_seek_diver(
     divers: Query<&Transform, With<Diver>>,
-    mut enemies: Query<(&Transform, &mut Velocity), With<Enemy>>,
+    mut enemies: Query<(&Transform, &mut Velocity), (With<Enemy>, Without<Dead>)>,
 ) {
     if let Ok(diver_transform) = divers.get_single() {
         for (enemy_transform, mut enemy_velocity) in &mut enemies {
@@ -109,6 +110,26 @@ fn enemy_on_diver() {
         .id();
     app.world
         .spawn((Transform::from_translation(Vec3::ZERO), Diver));
+    app.update();
+    let enemy_velocity = app.world.get::<Velocity>(enemy_id).unwrap();
+    assert_eq!(enemy_velocity.0, Vec3::ZERO);
+}
+
+#[test]
+fn dead_enemy_not_seek() {
+    let mut app = App::new();
+    app.add_systems(Update, enemy_seek_diver);
+    let enemy_id = app
+        .world
+        .spawn((
+            Transform::from_translation(Vec3::ZERO),
+            Velocity(Vec3::ZERO),
+            Enemy,
+            Dead,
+        ))
+        .id();
+    app.world
+        .spawn((Transform::from_translation(Vec3::new(1., 1., 0.)), Diver));
     app.update();
     let enemy_velocity = app.world.get::<Velocity>(enemy_id).unwrap();
     assert_eq!(enemy_velocity.0, Vec3::ZERO);
