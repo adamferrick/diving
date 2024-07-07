@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 
+use crate::position::Depth;
 use crate::respiration::circulation::*;
 use crate::respiration::BloodstreamContent;
-use crate::Depth;
 
 const ATMOSPHERIC_PRESSURE_BAR: f32 = 1.;
 const BAR_MSW_RATIO: f32 = 1. / 10.;

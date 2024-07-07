@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::Velocity;
+use crate::position::Velocity;
 
 #[derive(Component)]
 pub struct Drag(pub f32);

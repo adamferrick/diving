@@ -4,12 +4,12 @@ pub mod circulation;
 pub mod inhalation;
 
 use crate::circulation::*;
+use crate::position::Depth;
 use crate::respiration::decompression::GasExchangeInLungs;
 use crate::respiration::equalization::BloodstreamPressure;
 use crate::respiration::nitrogen::NitrogenHazard;
 use crate::respiration::oxygen::OxygenHazard;
 use crate::respiration::usage::GasUsageRate;
-use crate::Depth;
 use inhalation::*;
 
 #[derive(Bundle, Default)]

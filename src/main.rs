@@ -1,21 +1,17 @@
-use crate::collision::*;
 use crate::diver::*;
-use crate::drag::*;
 use crate::fauna::*;
 use crate::health::*;
-use crate::position::*;
+use crate::physics::*;
 use crate::projectile::*;
 use crate::respiration::*;
 use crate::ui::*;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 
-pub mod collision;
 pub mod diver;
-pub mod drag;
 pub mod fauna;
 pub mod health;
-pub mod position;
+pub mod physics;
 pub mod projectile;
 pub mod respiration;
 pub mod ui;
@@ -31,10 +27,8 @@ fn main() {
         .add_plugins((
             DefaultPlugins,
             health_plugin,
-            collision_plugin,
             diver_plugin,
-            position_plugin,
-            drag_plugin,
+            physics_plugin,
             projectile_plugin,
             respiration_plugin,
             fauna_plugin,

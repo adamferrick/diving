@@ -1,12 +1,12 @@
 use bevy::prelude::*;
 use bevy::sprite::MaterialMesh2dBundle;
 
+use crate::collision::RectangularHitbox;
+use crate::drag::Drag;
+use crate::position::Velocity;
 use crate::Dead;
 use crate::Diver;
 use crate::Health;
-use crate::RectangularHitbox;
-use crate::Velocity;
-use crate::Drag;
 
 const ENEMY_SPEED: f32 = 1.1;
 const ENEMY_WIDTH: f32 = 20.;
