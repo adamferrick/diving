@@ -80,14 +80,18 @@ pub fn update_health_ui(
 
 pub fn update_respiration_ui(
     mut texts: Query<&mut Text, With<CirculationText>>,
-    bloodstream_query: Query<&BloodstreamContent, With<Diver>>,
+    diver_query: Query<(&BloodstreamContent, &EquippedTank), With<Diver>>,
+    cylinder_query: Query<&DivingCylinder>,
 ) {
     for mut text in &mut texts {
-        if let Ok(bloodstream) = bloodstream_query.get_single() {
-            text.sections[0].value = format!(
-                "Air remaining: {0:.0}%",
-                (bloodstream.amount_remaining / bloodstream.capacity) * 100.
-            );
+        if let Ok((bloodstream, equipped_tank)) = diver_query.get_single() {
+            if let Ok(cylinder) = cylinder_query.get(equipped_tank.0) {
+                text.sections[0].value = format!(
+                    "Breath remaining: {0:.0}%, Tank remaining: {1:.0}%",
+                    (bloodstream.amount_remaining / bloodstream.capacity) * 100.,
+                    (cylinder.amount_remaining / cylinder.capacity) * 100.,
+                );
+            }
         }
     }
 }
