@@ -1,5 +1,6 @@
 use crate::collision::*;
 use crate::diver::*;
+use crate::drag::*;
 use crate::fauna::*;
 use crate::health::*;
 use crate::position::*;
@@ -11,6 +12,7 @@ use bevy::window::PrimaryWindow;
 
 pub mod collision;
 pub mod diver;
+pub mod drag;
 pub mod fauna;
 pub mod health;
 pub mod position;
@@ -32,6 +34,7 @@ fn main() {
             collision_plugin,
             diver_plugin,
             position_plugin,
+            drag_plugin,
             projectile_plugin,
             respiration_plugin,
             fauna_plugin,

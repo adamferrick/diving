@@ -1,8 +1,11 @@
 use crate::collision::*;
 use crate::health::*;
 use crate::position::*;
+use crate::drag::Drag;
 use bevy::prelude::*;
 use bevy::sprite::MaterialMesh2dBundle;
+
+const PROJECTILE_DRAG: f32 = 0.99;
 
 #[derive(Component)]
 pub struct Projectile;
@@ -27,6 +30,7 @@ pub struct ProjectileBundle {
     hitbox: RectangularHitbox,
     projectile: Projectile,
     velocity: Velocity,
+    drag: Drag,
 }
 
 impl ProjectileBundle {
@@ -36,6 +40,7 @@ impl ProjectileBundle {
             hitbox: RectangularHitbox(dims),
             projectile: Projectile,
             velocity: Velocity(velocity),
+            drag: Drag(PROJECTILE_DRAG),
         }
     }
 }

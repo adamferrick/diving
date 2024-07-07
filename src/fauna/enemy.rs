@@ -6,11 +6,13 @@ use crate::Diver;
 use crate::Health;
 use crate::RectangularHitbox;
 use crate::Velocity;
+use crate::Drag;
 
 const ENEMY_SPEED: f32 = 1.1;
 const ENEMY_WIDTH: f32 = 20.;
 const ENEMY_HEIGHT: f32 = 20.;
 const ENEMY_HEALTH: f32 = 40.;
+const ENEMY_DRAG: f32 = 0.99;
 
 #[derive(Component)]
 pub struct Enemy;
@@ -21,6 +23,7 @@ pub struct EnemyBundle {
     hitbox: RectangularHitbox,
     health: Health,
     velocity: Velocity,
+    drag: Drag,
 }
 
 impl EnemyBundle {
@@ -30,6 +33,7 @@ impl EnemyBundle {
             hitbox: RectangularHitbox(Rectangle::new(ENEMY_WIDTH, ENEMY_HEIGHT)),
             health: Health(ENEMY_HEALTH),
             velocity: Velocity(Vec3::new(0., 0., 0.)),
+            drag: Drag(ENEMY_DRAG),
         }
     }
 }
