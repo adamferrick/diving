@@ -1,8 +1,7 @@
-use crate::bag::Bag;
+use crate::bag::*;
 use crate::collision::*;
 use crate::drag::Drag;
 use crate::health::*;
-use crate::inventory::collectible::*;
 use crate::position::*;
 use crate::projectile::*;
 use crate::respiration::inhalation::*;
