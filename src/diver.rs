@@ -99,12 +99,15 @@ pub fn spawn_diver(
     let material_handle = materials.add(material);
 
     let cylinder_id = commands
-        .spawn(DivingCylinder {
-            capacity: DIVER_TANK_CAPACITY,
-            amount_remaining: DIVER_TANK_AMOUNT_REMAINING,
-            proportion_of_oxygen: DIVER_TANK_OXYGEN,
-            proportion_of_nitrogen: DIVER_TANK_NITROGEN,
-        })
+        .spawn((
+            DivingCylinder {
+                capacity: DIVER_TANK_CAPACITY,
+                amount_remaining: DIVER_TANK_AMOUNT_REMAINING,
+                proportion_of_oxygen: DIVER_TANK_OXYGEN,
+                proportion_of_nitrogen: DIVER_TANK_NITROGEN,
+            },
+            Collectible,
+        ))
         .id();
 
     let ammo_id = commands
