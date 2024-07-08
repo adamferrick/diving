@@ -1,3 +1,4 @@
+use crate::bag::Bag;
 use crate::collision::*;
 use crate::drag::Drag;
 use crate::health::*;
@@ -21,6 +22,7 @@ const SPEAR_DAMAGE: f32 = 40.;
 const SPEAR_FIRE_RADIUS: f32 = 40.;
 
 const DIVER_INITIAL_AMMO: u32 = 3;
+const DIVER_INITIAL_BAG_SPACE: usize = 4;
 
 const DIVER_TANK_CAPACITY: f32 = 1000.;
 const DIVER_TANK_AMOUNT_REMAINING: f32 = 800.;
@@ -114,15 +116,22 @@ pub fn spawn_diver(
         .spawn((Collectible, Ammo::Finite(DIVER_INITIAL_AMMO)))
         .id();
 
-    commands.spawn((
-        DiverBundle::new(cylinder_id, ammo_id),
-        MaterialMesh2dBundle {
-            mesh: mesh_handle.into(),
-            material: material_handle,
-            transform: Transform::from_translation(Vec3::new(0., 0., 0.)),
-            ..default()
-        },
-    ));
+    let diver_id = commands
+        .spawn((
+            DiverBundle::new(cylinder_id, ammo_id),
+            Bag {
+                collectibles: Vec::new(),
+                capacity: DIVER_INITIAL_BAG_SPACE,
+            },
+            MaterialMesh2dBundle {
+                mesh: mesh_handle.into(),
+                material: material_handle,
+                transform: Transform::from_translation(Vec3::new(0., 0., 0.)),
+                ..default()
+            },
+        ))
+        .id();
+    commands.entity(ammo_id).insert(Collected(diver_id));
 }
 
 pub fn player_control_velocity(
