@@ -120,7 +120,7 @@ pub fn spawn_diver(
         .spawn((
             DiverBundle::new(cylinder_id, ammo_id),
             Bag {
-                collectibles: Vec::new(),
+                collectibles: vec![cylinder_id, ammo_id],
                 capacity: DIVER_INITIAL_BAG_SPACE,
             },
             MaterialMesh2dBundle {
@@ -132,6 +132,7 @@ pub fn spawn_diver(
         ))
         .id();
     commands.entity(ammo_id).insert(Collected(diver_id));
+    commands.entity(cylinder_id).insert(Collected(diver_id));
 }
 
 pub fn player_control_velocity(
