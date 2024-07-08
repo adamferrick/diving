@@ -1,6 +1,7 @@
 use crate::diver::*;
 use crate::fauna::*;
 use crate::health::*;
+use crate::inventory::*;
 use crate::physics::*;
 use crate::projectile::*;
 use crate::respiration::*;
@@ -31,6 +32,7 @@ fn main() {
             diver_plugin,
             physics_plugin,
             projectile_plugin,
+            inventory_plugin,
             respiration_plugin,
             fauna_plugin,
             ui_plugin,
