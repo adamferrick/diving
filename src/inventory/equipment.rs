@@ -14,9 +14,15 @@ pub struct CylinderEquipEvent {
     pub wearer: Entity,
 }
 
+#[derive(Event)]
+pub struct CylinderUnequipEvent {
+    pub wearer: Entity,
+}
+
 pub fn equipment_plugin(app: &mut App) {
     app.add_event::<CylinderEquipEvent>();
-    app.add_systems(FixedUpdate, equip_cylinder);
+    app.add_event::<CylinderUnequipEvent>();
+    app.add_systems(FixedUpdate, (equip_cylinder, unequip_cylinder));
 }
 
 pub fn equip_cylinder(
@@ -100,7 +106,10 @@ fn did_replace_cylinder() {
         ))
         .id();
     let wearer_id = app.world.spawn(EquippedTank(cylinder_1_id)).id();
-    app.world.get_entity_mut(cylinder_1_id).unwrap().insert(Equipped(wearer_id));
+    app.world
+        .get_entity_mut(cylinder_1_id)
+        .unwrap()
+        .insert(Equipped(wearer_id));
     app.world
         .resource_mut::<Events<CylinderEquipEvent>>()
         .send(CylinderEquipEvent {
@@ -115,4 +124,53 @@ fn did_replace_cylinder() {
     assert_eq!(equipped_tank.0, cylinder_2_id);
     // cylinder 1 should not be equipped
     assert!(app.world.get::<Equipped>(cylinder_1_id).is_none());
+}
+
+pub fn unequip_cylinder(
+    mut commands: Commands,
+    equipped_cylinders: Query<&EquippedTank>,
+    mut cylinder_unequip_events: EventReader<CylinderUnequipEvent>,
+) {
+    for cylinder_unequip_event in cylinder_unequip_events.read() {
+        if let Ok(equipped_cylinder) = equipped_cylinders.get(cylinder_unequip_event.wearer) {
+            if let Some(mut cylinder_entity) = commands.get_entity(equipped_cylinder.0) {
+                cylinder_entity.remove::<Equipped>();
+            }
+        }
+        if let Some(mut wearer_entity) = commands.get_entity(cylinder_unequip_event.wearer) {
+            wearer_entity.remove::<EquippedTank>();
+        }
+    }
+}
+
+#[test]
+fn did_unequip_cylinder() {
+    let mut app = App::new();
+    app.add_event::<CylinderUnequipEvent>();
+    app.add_systems(Update, unequip_cylinder);
+    let cylinder_id = app
+        .world
+        .spawn((
+            Equippable,
+            DivingCylinder {
+                capacity: 0.,
+                amount_remaining: 0.,
+                proportion_of_oxygen: 0.,
+                proportion_of_nitrogen: 0.,
+            },
+        ))
+        .id();
+    let wearer_id = app.world.spawn(EquippedTank(cylinder_id)).id();
+    app.world
+        .get_entity_mut(cylinder_id)
+        .unwrap()
+        .insert(Equipped(wearer_id));
+    app.world
+        .resource_mut::<Events<CylinderUnequipEvent>>()
+        .send(CylinderUnequipEvent { wearer: wearer_id });
+    app.update();
+    let wearer = app.world.get::<EquippedTank>(wearer_id);
+    assert!(wearer.is_none());
+    let worn_cylinder = app.world.get::<Equipped>(cylinder_id);
+    assert!(worn_cylinder.is_none());
 }
