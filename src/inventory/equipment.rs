@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 
 use crate::inhalation::*;
+use crate::states::PausedState;
 
 #[derive(Component)]
 pub struct Equippable;
@@ -22,7 +23,10 @@ pub struct CylinderUnequipEvent {
 pub fn equipment_plugin(app: &mut App) {
     app.add_event::<CylinderEquipEvent>();
     app.add_event::<CylinderUnequipEvent>();
-    app.add_systems(FixedUpdate, (equip_cylinder, unequip_cylinder));
+    app.add_systems(
+        FixedUpdate,
+        (equip_cylinder, unequip_cylinder).run_if(in_state(PausedState::Running)),
+    );
 }
 
 pub fn equip_cylinder(

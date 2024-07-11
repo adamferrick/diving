@@ -2,6 +2,7 @@ use crate::collision::*;
 use crate::drag::Drag;
 use crate::health::*;
 use crate::position::*;
+use crate::states::*;
 use bevy::prelude::*;
 use bevy::sprite::MaterialMesh2dBundle;
 
@@ -57,7 +58,8 @@ pub fn projectile_plugin(app: &mut App) {
     app.add_event::<ProjectileHit>();
     app.add_systems(
         FixedUpdate,
-        (projectile_hit.after(projectile_collision), fire_projectile),
+        (projectile_hit.after(projectile_collision), fire_projectile)
+            .run_if(in_state(PausedState::Running)),
     );
 }
 

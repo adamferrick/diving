@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 
+use crate::states::PausedState;
+
 #[derive(Component)]
 pub struct Collectible;
 
@@ -26,7 +28,10 @@ pub struct ItemDrop {
 pub fn bag_plugin(app: &mut App) {
     app.add_event::<ItemPickup>();
     app.add_event::<ItemDrop>();
-    app.add_systems(FixedUpdate, (pick_up_item, drop_item));
+    app.add_systems(
+        FixedUpdate,
+        (pick_up_item, drop_item).run_if(in_state(PausedState::Running)),
+    );
 }
 
 pub fn pick_up_item(

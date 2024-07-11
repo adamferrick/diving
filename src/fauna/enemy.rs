@@ -4,6 +4,7 @@ use bevy::sprite::MaterialMesh2dBundle;
 use crate::collision::RectangularHitbox;
 use crate::drag::Drag;
 use crate::position::Velocity;
+use crate::states::PausedState;
 use crate::Dead;
 use crate::Diver;
 use crate::Health;
@@ -40,7 +41,10 @@ impl EnemyBundle {
 
 pub fn enemy_plugin(app: &mut App) {
     app.add_systems(Startup, spawn_enemies);
-    app.add_systems(FixedUpdate, enemy_seek_diver);
+    app.add_systems(
+        FixedUpdate,
+        enemy_seek_diver.run_if(in_state(PausedState::Running)),
+    );
 }
 
 pub fn spawn_enemies(

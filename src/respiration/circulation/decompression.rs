@@ -1,5 +1,6 @@
 use crate::circulation::*;
 use crate::health::*;
+use crate::states::PausedState;
 use bevy::prelude::*;
 
 const DEFAULT_LOAD: f32 = 1.;
@@ -28,7 +29,8 @@ pub fn decompression_plugin(app: &mut App) {
         (
             outgassing_load.after(equalize_pressure),
             outgassing_deload.after(outgassing_load),
-        ),
+        )
+            .run_if(in_state(PausedState::Running)),
     );
 }
 

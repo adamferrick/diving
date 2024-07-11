@@ -1,3 +1,4 @@
+use crate::states::*;
 use bevy::prelude::*;
 
 pub const SEA_LEVEL: f32 = 0.;
@@ -12,7 +13,8 @@ pub struct Depth(pub f32);
 pub fn position_plugin(app: &mut App) {
     app.add_systems(
         FixedUpdate,
-        (update_position, update_depth.after(update_position)),
+        (update_position, update_depth.after(update_position))
+            .run_if(in_state(PausedState::Running)),
     );
 }
 

@@ -1,5 +1,6 @@
 use crate::respiration::circulation::intake::*;
 use crate::respiration::BloodstreamContent;
+use crate::states::PausedState;
 use bevy::prelude::*;
 
 const DEFAULT_USAGE_RATE: f32 = 1. / 64.;
@@ -19,7 +20,8 @@ pub fn usage_plugin(app: &mut App) {
         (
             usage.after(intake_gas),
             update_proportions_on_exhaust.after(usage),
-        ),
+        )
+            .run_if(in_state(PausedState::Running)),
     );
 }
 

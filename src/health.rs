@@ -1,4 +1,5 @@
 use crate::projectile::*;
+use crate::states::PausedState;
 use bevy::prelude::*;
 
 #[derive(Component)]
@@ -23,7 +24,8 @@ pub fn health_plugin(app: &mut App) {
         (
             damage_health.after(projectile_hit),
             kill.after(damage_health),
-        ),
+        )
+            .run_if(in_state(PausedState::Running)),
     );
 }
 

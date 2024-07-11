@@ -2,6 +2,7 @@ use bevy::prelude::*;
 
 use crate::respiration::circulation::BloodstreamPressure;
 use crate::respiration::BloodstreamContent;
+use crate::states::PausedState;
 use crate::DamageEvent;
 
 const PN2_NARCOSIS_THRESHOLD: f32 = 0.78 * (30. / 10. + 1.);
@@ -22,7 +23,10 @@ impl Default for NitrogenHazard {
 }
 
 pub fn nitrogen_plugin(app: &mut App) {
-    app.add_systems(FixedUpdate, nitrogen_narcosis);
+    app.add_systems(
+        FixedUpdate,
+        nitrogen_narcosis.run_if(in_state(PausedState::Running)),
+    );
 }
 
 pub fn nitrogen_narcosis(

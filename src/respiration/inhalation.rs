@@ -1,4 +1,5 @@
 use crate::circulation::CirculateGas;
+use crate::PausedState;
 use bevy::prelude::*;
 
 const AIR_O2_RATIO: f32 = 0.21;
@@ -52,7 +53,10 @@ pub struct BreathTaken {
 
 pub fn inhalation_plugin(app: &mut App) {
     app.add_event::<BreathTaken>();
-    app.add_systems(FixedUpdate, inhalation);
+    app.add_systems(
+        FixedUpdate,
+        inhalation.run_if(in_state(PausedState::Running)),
+    );
 }
 
 pub fn inhalation(

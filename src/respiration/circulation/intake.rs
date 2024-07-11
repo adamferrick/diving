@@ -2,9 +2,13 @@ use bevy::prelude::*;
 
 use crate::respiration::circulation::*;
 use crate::respiration::BloodstreamContent;
+use crate::states::PausedState;
 
 pub fn intake_plugin(app: &mut App) {
-    app.add_systems(FixedUpdate, intake_gas);
+    app.add_systems(
+        FixedUpdate,
+        intake_gas.run_if(in_state(PausedState::Running)),
+    );
 }
 
 pub fn intake_gas(

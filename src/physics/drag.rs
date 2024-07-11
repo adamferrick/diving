@@ -1,12 +1,16 @@
 use bevy::prelude::*;
 
 use crate::position::Velocity;
+use crate::states::PausedState;
 
 #[derive(Component)]
 pub struct Drag(pub f32);
 
 pub fn drag_plugin(app: &mut App) {
-    app.add_systems(FixedUpdate, apply_drag);
+    app.add_systems(
+        FixedUpdate,
+        apply_drag.run_if(in_state(PausedState::Running)),
+    );
 }
 
 pub fn apply_drag(mut movables: Query<(&Drag, &mut Velocity)>) {

@@ -5,6 +5,7 @@ use crate::inventory::*;
 use crate::physics::*;
 use crate::projectile::*;
 use crate::respiration::*;
+use crate::states::*;
 use crate::ui::*;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
@@ -16,6 +17,7 @@ pub mod inventory;
 pub mod physics;
 pub mod projectile;
 pub mod respiration;
+pub mod states;
 pub mod ui;
 
 #[derive(Resource, Default)]
@@ -34,6 +36,7 @@ fn main() {
             projectile_plugin,
             inventory_plugin,
             respiration_plugin,
+            states_plugin,
             fauna_plugin,
             ui_plugin,
         ))
