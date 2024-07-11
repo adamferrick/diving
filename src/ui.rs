@@ -3,7 +3,7 @@ use crate::health::*;
 use crate::respiration::inhalation::*;
 use bevy::prelude::*;
 
-const FONT_SIZE: f32 = 32.;
+pub const FONT_SIZE: f32 = 32.;
 
 #[derive(Component)]
 pub struct HealthText;
