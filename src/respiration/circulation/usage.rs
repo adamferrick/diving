@@ -5,7 +5,8 @@ use bevy::prelude::*;
 
 const DEFAULT_USAGE_RATE: f32 = 1. / 64.;
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
+#[reflect(Component)]
 pub struct GasUsageRate(pub f32);
 
 impl Default for GasUsageRate {

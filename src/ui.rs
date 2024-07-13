@@ -5,10 +5,12 @@ use bevy::prelude::*;
 
 pub const FONT_SIZE: f32 = 32.;
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
+#[reflect(Component)]
 pub struct HealthText;
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
+#[reflect(Component)]
 pub struct CirculationText;
 
 pub fn ui_plugin(app: &mut App) {

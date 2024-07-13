@@ -8,10 +8,12 @@ use bevy::sprite::MaterialMesh2dBundle;
 const OBSTACLE_WIDTH: f32 = 400.;
 const OBSTACLE_HEIGHT: f32 = 100.;
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
+#[reflect(Component)]
 pub struct RectangularHitbox(pub Rectangle);
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
+#[reflect(Component)]
 pub struct Obstacle;
 
 pub fn collision_plugin(app: &mut App) {

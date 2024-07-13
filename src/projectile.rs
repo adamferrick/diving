@@ -8,10 +8,12 @@ use bevy::sprite::MaterialMesh2dBundle;
 
 const PROJECTILE_DRAG: f32 = 0.99;
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
+#[reflect(Component)]
 pub struct Projectile;
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
+#[reflect(Component)]
 pub enum Ammo {
     Infinite,
     Finite(u32),

@@ -32,10 +32,12 @@ const DIVER_TANK_NITROGEN: f32 = 0.78;
 const DIVER_BLOODSTREAM_CAPACITY: f32 = 100.;
 const DIVER_BLOODSTREAM_AMOUNT_REMAINING: f32 = 50.;
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
+#[reflect(Component)]
 pub struct Diver;
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
+#[reflect(Component)]
 pub struct EquippedAmmo(pub Entity);
 
 #[derive(Bundle)]

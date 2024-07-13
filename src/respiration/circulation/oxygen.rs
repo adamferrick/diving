@@ -8,7 +8,8 @@ use crate::DamageEvent;
 const MAX_PO2_HUMAN: f32 = 1.4;
 const MIN_PO2_HUMAN: f32 = 0.16;
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
+#[reflect(Component)]
 pub struct OxygenHazard {
     po2_upper: f32,
     po2_lower: f32,

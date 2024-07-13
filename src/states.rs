@@ -8,7 +8,8 @@ pub enum PausedState {
     Running,
 }
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
+#[reflect(Component)]
 pub struct PauseMenu;
 
 pub fn states_plugin(app: &mut App) {

@@ -3,7 +3,8 @@ use bevy::prelude::*;
 use crate::position::Velocity;
 use crate::states::PausedState;
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
+#[reflect(Component)]
 pub struct Drag(pub f32);
 
 pub fn drag_plugin(app: &mut App) {

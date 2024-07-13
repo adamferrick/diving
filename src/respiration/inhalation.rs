@@ -5,7 +5,8 @@ use bevy::prelude::*;
 const AIR_O2_RATIO: f32 = 0.21;
 const AIR_N2_RATIO: f32 = 0.78;
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
+#[reflect(Component)]
 pub struct DivingCylinder {
     pub capacity: f32,
     pub amount_remaining: f32,
@@ -24,10 +25,12 @@ impl Default for DivingCylinder {
     }
 }
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
+#[reflect(Component)]
 pub struct EquippedTank(pub Entity);
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
+#[reflect(Component)]
 pub struct BloodstreamContent {
     pub capacity: f32,
     pub amount_remaining: f32,

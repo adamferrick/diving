@@ -8,7 +8,8 @@ use crate::states::PausedState;
 const ATMOSPHERIC_PRESSURE_BAR: f32 = 1.;
 const BAR_MSW_RATIO: f32 = 1. / 10.;
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
+#[reflect(Component)]
 pub struct BloodstreamPressure(pub f32);
 
 impl Default for BloodstreamPressure {

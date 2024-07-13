@@ -4,10 +4,12 @@ use bevy::prelude::*;
 pub const SEA_LEVEL: f32 = 0.;
 const METERS_TRANSLATION_RATIO: f32 = 10.;
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
+#[reflect(Component)]
 pub struct Velocity(pub Vec3);
 
-#[derive(Component, Default)]
+#[derive(Component, Default, Reflect)]
+#[reflect(Component)]
 pub struct Depth(pub f32);
 
 pub fn position_plugin(app: &mut App) {

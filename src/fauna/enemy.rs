@@ -15,7 +15,8 @@ const ENEMY_HEIGHT: f32 = 20.;
 const ENEMY_HEALTH: f32 = 40.;
 const ENEMY_DRAG: f32 = 0.99;
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
+#[reflect(Component)]
 pub struct Enemy;
 
 #[derive(Bundle)]

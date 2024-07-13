@@ -21,10 +21,12 @@ pub mod respiration;
 pub mod states;
 pub mod ui;
 
-#[derive(Resource, Default)]
+#[derive(Resource, Default, Reflect)]
+#[reflect(Resource)]
 pub struct CursorPosition(Vec2);
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
+#[reflect(Component)]
 struct MainCamera;
 
 fn main() {

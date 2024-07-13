@@ -2,13 +2,16 @@ use crate::projectile::*;
 use crate::states::PausedState;
 use bevy::prelude::*;
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
+#[reflect(Component)]
 pub struct Health(pub f32);
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
+#[reflect(Component)]
 pub struct Damage(pub f32);
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
+#[reflect(Component)]
 pub struct Dead;
 
 #[derive(Event)]

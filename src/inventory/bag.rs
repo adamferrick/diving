@@ -2,13 +2,16 @@ use bevy::prelude::*;
 
 use crate::states::PausedState;
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
+#[reflect(Component)]
 pub struct Collectible;
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
+#[reflect(Component)]
 pub struct Collected(pub Entity);
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
+#[reflect(Component)]
 pub struct Bag {
     pub collectibles: Vec<Entity>,
     pub capacity: usize,

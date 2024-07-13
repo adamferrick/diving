@@ -6,7 +6,8 @@ use bevy::prelude::*;
 const DEFAULT_LOAD: f32 = 1.;
 const ASCENT_RATE: f32 = 1. / (64. * 60.);
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
+#[reflect(Component)]
 pub struct GasExchangeInLungs {
     pub max_load: f32,
     pub load: f32,

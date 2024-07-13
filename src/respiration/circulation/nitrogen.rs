@@ -7,7 +7,8 @@ use crate::DamageEvent;
 
 const PN2_NARCOSIS_THRESHOLD: f32 = 0.78 * (30. / 10. + 1.);
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
+#[reflect(Component)]
 pub struct NitrogenHazard {
     n2_upper: f32,
     damage_factor: f32,

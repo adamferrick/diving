@@ -3,10 +3,12 @@ use bevy::prelude::*;
 use crate::inhalation::*;
 use crate::states::PausedState;
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
+#[reflect(Component)]
 pub struct Equippable;
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
+#[reflect(Component)]
 pub struct Equipped(pub Entity);
 
 #[derive(Event)]
