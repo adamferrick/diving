@@ -9,6 +9,7 @@ use crate::states::*;
 use crate::ui::*;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
+use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
 pub mod diver;
 pub mod fauna;
@@ -30,6 +31,7 @@ fn main() {
     App::new()
         .add_plugins((
             DefaultPlugins,
+            WorldInspectorPlugin::new(),
             health_plugin,
             diver_plugin,
             physics_plugin,
