@@ -54,7 +54,7 @@ pub fn spawn_enemies(
 ) {
     let mut spawn_enemy = |x: f32, y: f32| {
         let mesh = Mesh::from(Rectangle::new(ENEMY_WIDTH, ENEMY_HEIGHT));
-        let material = ColorMaterial::from(Color::rgb(0., 0., 1.));
+        let material = ColorMaterial::from_color(Srgba::rgb(0., 0., 1.));
         let mesh_handle = meshes.add(mesh);
         let material_handle = materials.add(material);
         commands.spawn((
@@ -90,17 +90,17 @@ fn did_seek_diver() {
     let mut app = App::new();
     app.add_systems(Update, enemy_seek_diver);
     let enemy_id = app
-        .world
+        .world_mut()
         .spawn((
             Transform::from_translation(Vec3::ZERO),
             Velocity(Vec3::ZERO),
             Enemy,
         ))
         .id();
-    app.world
+    app.world_mut()
         .spawn((Transform::from_translation(Vec3::new(1., 1., 0.)), Diver));
     app.update();
-    let enemy_velocity = app.world.get::<Velocity>(enemy_id).unwrap();
+    let enemy_velocity = app.world().get::<Velocity>(enemy_id).unwrap();
     assert_eq!(enemy_velocity.0, Vec3::new(1., 1., 0.).normalize() * 1.1);
 }
 
@@ -109,17 +109,17 @@ fn enemy_on_diver() {
     let mut app = App::new();
     app.add_systems(Update, enemy_seek_diver);
     let enemy_id = app
-        .world
+        .world_mut()
         .spawn((
             Transform::from_translation(Vec3::ZERO),
             Velocity(Vec3::ZERO),
             Enemy,
         ))
         .id();
-    app.world
+    app.world_mut()
         .spawn((Transform::from_translation(Vec3::ZERO), Diver));
     app.update();
-    let enemy_velocity = app.world.get::<Velocity>(enemy_id).unwrap();
+    let enemy_velocity = app.world().get::<Velocity>(enemy_id).unwrap();
     assert_eq!(enemy_velocity.0, Vec3::ZERO);
 }
 
@@ -128,7 +128,7 @@ fn dead_enemy_not_seek() {
     let mut app = App::new();
     app.add_systems(Update, enemy_seek_diver);
     let enemy_id = app
-        .world
+        .world_mut()
         .spawn((
             Transform::from_translation(Vec3::ZERO),
             Velocity(Vec3::ZERO),
@@ -136,9 +136,9 @@ fn dead_enemy_not_seek() {
             Dead,
         ))
         .id();
-    app.world
+    app.world_mut()
         .spawn((Transform::from_translation(Vec3::new(1., 1., 0.)), Diver));
     app.update();
-    let enemy_velocity = app.world.get::<Velocity>(enemy_id).unwrap();
+    let enemy_velocity = app.world().get::<Velocity>(enemy_id).unwrap();
     assert_eq!(enemy_velocity.0, Vec3::ZERO);
 }

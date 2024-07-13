@@ -37,7 +37,7 @@ fn did_use() {
     let mut app = App::new();
     app.add_systems(Update, usage);
     let gas_user_id = app
-        .world
+        .world_mut()
         .spawn((
             GasUsageRate(50.),
             BloodstreamContent {
@@ -49,7 +49,7 @@ fn did_use() {
         ))
         .id();
     app.update();
-    let new_bloodstream_content = app.world.get::<BloodstreamContent>(gas_user_id).unwrap();
+    let new_bloodstream_content = app.world().get::<BloodstreamContent>(gas_user_id).unwrap();
     assert_eq!(new_bloodstream_content.amount_remaining, 50.);
 }
 
@@ -58,7 +58,7 @@ fn did_use_exhaust() {
     let mut app = App::new();
     app.add_systems(Update, usage);
     let gas_user_id = app
-        .world
+        .world_mut()
         .spawn((
             GasUsageRate(50.),
             BloodstreamContent {
@@ -70,7 +70,7 @@ fn did_use_exhaust() {
         ))
         .id();
     app.update();
-    let new_bloodstream_content = app.world.get::<BloodstreamContent>(gas_user_id).unwrap();
+    let new_bloodstream_content = app.world().get::<BloodstreamContent>(gas_user_id).unwrap();
     assert_eq!(new_bloodstream_content.amount_remaining, 0.);
 }
 
@@ -87,7 +87,7 @@ fn did_update_proportions_on_exhaust() {
     let mut app = App::new();
     app.add_systems(Update, update_proportions_on_exhaust);
     let gas_user_id = app
-        .world
+        .world_mut()
         .spawn((BloodstreamContent {
             capacity: 100.,
             amount_remaining: 0.,
@@ -96,7 +96,7 @@ fn did_update_proportions_on_exhaust() {
         },))
         .id();
     app.update();
-    let new_bloodstream_content = app.world.get::<BloodstreamContent>(gas_user_id).unwrap();
+    let new_bloodstream_content = app.world().get::<BloodstreamContent>(gas_user_id).unwrap();
     assert_eq!(new_bloodstream_content.proportion_of_oxygen, 0.);
 }
 #[test]
@@ -104,7 +104,7 @@ fn did_not_update_proportions_on_non_exhaust() {
     let mut app = App::new();
     app.add_systems(Update, update_proportions_on_exhaust);
     let gas_user_id = app
-        .world
+        .world_mut()
         .spawn((BloodstreamContent {
             capacity: 100.,
             amount_remaining: 25.,
@@ -113,6 +113,6 @@ fn did_not_update_proportions_on_non_exhaust() {
         },))
         .id();
     app.update();
-    let new_bloodstream_content = app.world.get::<BloodstreamContent>(gas_user_id).unwrap();
+    let new_bloodstream_content = app.world().get::<BloodstreamContent>(gas_user_id).unwrap();
     assert_eq!(new_bloodstream_content.proportion_of_oxygen, 0.5);
 }

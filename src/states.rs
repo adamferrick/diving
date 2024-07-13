@@ -42,7 +42,7 @@ pub fn spawn_paused_message(mut commands: Commands) {
             justify_content: JustifyContent::Center,
             ..default()
         },
-        background_color: Color::BLUE.into(),
+        background_color: Srgba::rgb(0., 0., 1.).into(),
         ..default()
     };
     let message = TextBundle {

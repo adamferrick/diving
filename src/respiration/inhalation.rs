@@ -98,7 +98,7 @@ fn did_inhale_full() {
     app.add_event::<CirculateGas>();
     app.add_systems(Update, inhalation);
     let cylinder_id = app
-        .world
+        .world_mut()
         .spawn(DivingCylinder {
             capacity: 100.,
             amount_remaining: 100.,
@@ -107,7 +107,7 @@ fn did_inhale_full() {
         })
         .id();
     let breather_id = app
-        .world
+        .world_mut()
         .spawn((
             BloodstreamContent {
                 capacity: 100.,
@@ -118,17 +118,17 @@ fn did_inhale_full() {
             EquippedTank(cylinder_id),
         ))
         .id();
-    app.world
+    app.world_mut()
         .resource_mut::<Events<BreathTaken>>()
         .send(BreathTaken {
             entity: breather_id,
         });
     app.update();
     // cylinder proportion should be half empty
-    let new_cylinder = app.world.get::<DivingCylinder>(cylinder_id).unwrap();
+    let new_cylinder = app.world().get::<DivingCylinder>(cylinder_id).unwrap();
     assert_eq!(new_cylinder.amount_remaining, 50.);
     // should have sent an event
-    let gas_to_circulate_events = app.world.resource::<Events<CirculateGas>>();
+    let gas_to_circulate_events = app.world().resource::<Events<CirculateGas>>();
     let mut gas_to_circulate_reader = gas_to_circulate_events.get_reader();
     let gas_to_circulate = gas_to_circulate_reader
         .read(gas_to_circulate_events)
@@ -146,7 +146,7 @@ fn did_inhale_partial() {
     app.add_event::<CirculateGas>();
     app.add_systems(Update, inhalation);
     let cylinder_id = app
-        .world
+        .world_mut()
         .spawn(DivingCylinder {
             capacity: 100.,
             amount_remaining: 50.,
@@ -155,7 +155,7 @@ fn did_inhale_partial() {
         })
         .id();
     let breather_id = app
-        .world
+        .world_mut()
         .spawn((
             BloodstreamContent {
                 capacity: 100.,
@@ -166,17 +166,17 @@ fn did_inhale_partial() {
             EquippedTank(cylinder_id),
         ))
         .id();
-    app.world
+    app.world_mut()
         .resource_mut::<Events<BreathTaken>>()
         .send(BreathTaken {
             entity: breather_id,
         });
     app.update();
     // cylinder proportion should be empty
-    let new_cylinder = app.world.get::<DivingCylinder>(cylinder_id).unwrap();
+    let new_cylinder = app.world().get::<DivingCylinder>(cylinder_id).unwrap();
     assert_eq!(new_cylinder.amount_remaining, 0.);
     // should have sent an event
-    let gas_to_circulate_events = app.world.resource::<Events<CirculateGas>>();
+    let gas_to_circulate_events = app.world().resource::<Events<CirculateGas>>();
     let mut gas_to_circulate_reader = gas_to_circulate_events.get_reader();
     let gas_to_circulate = gas_to_circulate_reader
         .read(gas_to_circulate_events)
@@ -195,7 +195,7 @@ fn did_not_inhale_empty_cylinder() {
     app.add_event::<CirculateGas>();
     app.add_systems(Update, inhalation);
     let cylinder_id = app
-        .world
+        .world_mut()
         .spawn(DivingCylinder {
             capacity: 100.,
             amount_remaining: 0.,
@@ -204,7 +204,7 @@ fn did_not_inhale_empty_cylinder() {
         })
         .id();
     let breather_id = app
-        .world
+        .world_mut()
         .spawn((
             BloodstreamContent {
                 capacity: 100.,
@@ -215,17 +215,17 @@ fn did_not_inhale_empty_cylinder() {
             EquippedTank(cylinder_id),
         ))
         .id();
-    app.world
+    app.world_mut()
         .resource_mut::<Events<BreathTaken>>()
         .send(BreathTaken {
             entity: breather_id,
         });
     app.update();
     // cylinder proportion still should be empty
-    let new_cylinder = app.world.get::<DivingCylinder>(cylinder_id).unwrap();
+    let new_cylinder = app.world().get::<DivingCylinder>(cylinder_id).unwrap();
     assert_eq!(new_cylinder.amount_remaining, 0.);
     // should not have sent an event
-    let gas_to_circulate_events = app.world.resource::<Events<CirculateGas>>();
+    let gas_to_circulate_events = app.world().resource::<Events<CirculateGas>>();
     let mut gas_to_circulate_reader = gas_to_circulate_events.get_reader();
     let gas_to_circulate = gas_to_circulate_reader.read(gas_to_circulate_events).next();
     assert!(gas_to_circulate.is_none());

@@ -24,10 +24,10 @@ fn did_drag() {
     let mut app = App::new();
     app.add_systems(Update, apply_drag);
     let movable_id = app
-        .world
+        .world_mut()
         .spawn((Drag(0.5), Velocity(Vec3::new(1., 1., 0.))))
         .id();
     app.update();
-    let movable_velocity = app.world.get::<Velocity>(movable_id).unwrap();
+    let movable_velocity = app.world().get::<Velocity>(movable_id).unwrap();
     assert_eq!(movable_velocity.0, Vec3::new(0.5, 0.5, 0.));
 }

@@ -60,7 +60,7 @@ fn harmful_outgassing() {
     app.add_event::<DamageEvent>();
     app.add_systems(Update, outgassing_load);
     let breather_id = app
-        .world
+        .world_mut()
         .spawn((
             GasExchangeInLungs {
                 max_load: 2.,
@@ -70,17 +70,17 @@ fn harmful_outgassing() {
             Health(100.),
         ))
         .id();
-    app.world
+    app.world_mut()
         .resource_mut::<Events<Outgassing>>()
         .send(Outgassing {
             entity: breather_id,
             amount: 3.,
         });
     app.update();
-    let lungs = app.world.get::<GasExchangeInLungs>(breather_id).unwrap();
+    let lungs = app.world().get::<GasExchangeInLungs>(breather_id).unwrap();
     assert_eq!(lungs.load, 2.);
     // should send a DamageEvent
-    let damage_events = app.world.resource::<Events<DamageEvent>>();
+    let damage_events = app.world().resource::<Events<DamageEvent>>();
     let mut damage_reader = damage_events.get_reader();
     let damage = damage_reader.read(damage_events).next().unwrap();
     assert_eq!(damage.target, breather_id);
@@ -94,7 +94,7 @@ fn harmless_outgassing() {
     app.add_event::<DamageEvent>();
     app.add_systems(Update, outgassing_load);
     let breather_id = app
-        .world
+        .world_mut()
         .spawn((
             GasExchangeInLungs {
                 max_load: 2.,
@@ -104,17 +104,17 @@ fn harmless_outgassing() {
             Health(100.),
         ))
         .id();
-    app.world
+    app.world_mut()
         .resource_mut::<Events<Outgassing>>()
         .send(Outgassing {
             entity: breather_id,
             amount: 1.,
         });
     app.update();
-    let lungs = app.world.get::<GasExchangeInLungs>(breather_id).unwrap();
+    let lungs = app.world().get::<GasExchangeInLungs>(breather_id).unwrap();
     assert_eq!(lungs.load, 1.);
     // should not send a DamageEvent
-    let damage_events = app.world.resource::<Events<DamageEvent>>();
+    let damage_events = app.world().resource::<Events<DamageEvent>>();
     let mut damage_reader = damage_events.get_reader();
     let damage = damage_reader.read(damage_events).next();
     assert!(damage.is_none());
@@ -131,7 +131,7 @@ fn did_deload() {
     let mut app = App::new();
     app.add_systems(Update, outgassing_deload);
     let breather_id = app
-        .world
+        .world_mut()
         .spawn(GasExchangeInLungs {
             max_load: 2.,
             load: 1.,
@@ -139,7 +139,7 @@ fn did_deload() {
         })
         .id();
     app.update();
-    let lungs = app.world.get::<GasExchangeInLungs>(breather_id).unwrap();
+    let lungs = app.world().get::<GasExchangeInLungs>(breather_id).unwrap();
     assert_eq!(lungs.load, 0.5);
 }
 
@@ -148,7 +148,7 @@ fn fully_deloaded() {
     let mut app = App::new();
     app.add_systems(Update, outgassing_deload);
     let breather_id = app
-        .world
+        .world_mut()
         .spawn(GasExchangeInLungs {
             max_load: 2.,
             load: 0.,
@@ -156,6 +156,6 @@ fn fully_deloaded() {
         })
         .id();
     app.update();
-    let lungs = app.world.get::<GasExchangeInLungs>(breather_id).unwrap();
+    let lungs = app.world().get::<GasExchangeInLungs>(breather_id).unwrap();
     assert_eq!(lungs.load, 0.);
 }

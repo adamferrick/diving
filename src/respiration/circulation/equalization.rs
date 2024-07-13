@@ -77,7 +77,7 @@ fn did_equalize_pressure_absorption() {
     app.add_event::<Outgassing>();
     app.add_systems(Update, equalize_pressure);
     let breather_id = app
-        .world
+        .world_mut()
         .spawn((
             BloodstreamPressure(0.),
             BloodstreamContent {
@@ -89,7 +89,7 @@ fn did_equalize_pressure_absorption() {
             Depth(100.),
         ))
         .id();
-    app.world
+    app.world_mut()
         .resource_mut::<Events<CirculateGas>>()
         .send(CirculateGas {
             entity: breather_id,
@@ -99,10 +99,10 @@ fn did_equalize_pressure_absorption() {
         });
     app.update();
     // should have equalized the pressure
-    let new_bloodstream_pressure = app.world.get::<BloodstreamPressure>(breather_id).unwrap();
+    let new_bloodstream_pressure = app.world().get::<BloodstreamPressure>(breather_id).unwrap();
     assert_eq!(new_bloodstream_pressure.0, 2.75);
     // should not have sent an outgassing event (gas should have been absorbed)
-    let outgassing_events = app.world.resource::<Events<Outgassing>>();
+    let outgassing_events = app.world().resource::<Events<Outgassing>>();
     let mut outgassing_reader = outgassing_events.get_reader();
     let outgassing = outgassing_reader.read(outgassing_events).next();
     assert!(outgassing.is_none());
@@ -115,7 +115,7 @@ fn did_equalize_pressure_outgassing() {
     app.add_event::<Outgassing>();
     app.add_systems(Update, equalize_pressure);
     let breather_id = app
-        .world
+        .world_mut()
         .spawn((
             BloodstreamPressure(2.),
             BloodstreamContent {
@@ -127,7 +127,7 @@ fn did_equalize_pressure_outgassing() {
             Depth(0.),
         ))
         .id();
-    app.world
+    app.world_mut()
         .resource_mut::<Events<CirculateGas>>()
         .send(CirculateGas {
             entity: breather_id,
@@ -136,10 +136,10 @@ fn did_equalize_pressure_outgassing() {
             proportion_of_nitrogen: 0.,
         });
     app.update();
-    let new_bloodstream_pressure = app.world.get::<BloodstreamPressure>(breather_id).unwrap();
+    let new_bloodstream_pressure = app.world().get::<BloodstreamPressure>(breather_id).unwrap();
     assert_eq!(new_bloodstream_pressure.0, 1.75);
     // should have sent an outgassing event
-    let outgassing_events = app.world.resource::<Events<Outgassing>>();
+    let outgassing_events = app.world().resource::<Events<Outgassing>>();
     let mut outgassing_reader = outgassing_events.get_reader();
     let outgassing = outgassing_reader.read(outgassing_events).next().unwrap();
     assert_eq!(outgassing.entity, breather_id);
@@ -174,7 +174,7 @@ fn did_equalize_gases() {
     app.add_event::<CirculateGas>();
     app.add_systems(Update, equalize_gases);
     let breather_id = app
-        .world
+        .world_mut()
         .spawn(BloodstreamContent {
             capacity: 100.,
             amount_remaining: 50.,
@@ -182,7 +182,7 @@ fn did_equalize_gases() {
             proportion_of_nitrogen: 0.,
         })
         .id();
-    app.world
+    app.world_mut()
         .resource_mut::<Events<CirculateGas>>()
         .send(CirculateGas {
             entity: breather_id,
@@ -191,7 +191,7 @@ fn did_equalize_gases() {
             proportion_of_nitrogen: 0.5,
         });
     app.update();
-    let new_bloodstream_content = app.world.get::<BloodstreamContent>(breather_id).unwrap();
+    let new_bloodstream_content = app.world().get::<BloodstreamContent>(breather_id).unwrap();
     assert_eq!(new_bloodstream_content.proportion_of_oxygen, 0.25);
     assert_eq!(new_bloodstream_content.proportion_of_oxygen, 0.25);
 }

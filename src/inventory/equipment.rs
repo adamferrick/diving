@@ -55,7 +55,7 @@ fn did_equip_cylinder() {
     app.add_event::<CylinderEquipEvent>();
     app.add_systems(Update, equip_cylinder);
     let cylinder_id = app
-        .world
+        .world_mut()
         .spawn((
             Equippable,
             DivingCylinder {
@@ -66,17 +66,17 @@ fn did_equip_cylinder() {
             },
         ))
         .id();
-    let wearer_id = app.world.spawn(()).id();
-    app.world
+    let wearer_id = app.world_mut().spawn(()).id();
+    app.world_mut()
         .resource_mut::<Events<CylinderEquipEvent>>()
         .send(CylinderEquipEvent {
             item: cylinder_id,
             wearer: wearer_id,
         });
     app.update();
-    let equipped = app.world.get::<Equipped>(cylinder_id).unwrap();
+    let equipped = app.world().get::<Equipped>(cylinder_id).unwrap();
     assert_eq!(equipped.0, wearer_id);
-    let equipped_tank = app.world.get::<EquippedTank>(wearer_id).unwrap();
+    let equipped_tank = app.world().get::<EquippedTank>(wearer_id).unwrap();
     assert_eq!(equipped_tank.0, cylinder_id);
 }
 
@@ -86,7 +86,7 @@ fn did_replace_cylinder() {
     app.add_event::<CylinderEquipEvent>();
     app.add_systems(Update, equip_cylinder);
     let cylinder_1_id = app
-        .world
+        .world_mut()
         .spawn((
             Equippable,
             DivingCylinder {
@@ -98,7 +98,7 @@ fn did_replace_cylinder() {
         ))
         .id();
     let cylinder_2_id = app
-        .world
+        .world_mut()
         .spawn((
             Equippable,
             DivingCylinder {
@@ -109,12 +109,12 @@ fn did_replace_cylinder() {
             },
         ))
         .id();
-    let wearer_id = app.world.spawn(EquippedTank(cylinder_1_id)).id();
-    app.world
+    let wearer_id = app.world_mut().spawn(EquippedTank(cylinder_1_id)).id();
+    app.world_mut()
         .get_entity_mut(cylinder_1_id)
         .unwrap()
         .insert(Equipped(wearer_id));
-    app.world
+    app.world_mut()
         .resource_mut::<Events<CylinderEquipEvent>>()
         .send(CylinderEquipEvent {
             item: cylinder_2_id,
@@ -122,12 +122,12 @@ fn did_replace_cylinder() {
         });
     app.update();
     // cylinder 2 should be equipped
-    let equipped = app.world.get::<Equipped>(cylinder_2_id).unwrap();
+    let equipped = app.world().get::<Equipped>(cylinder_2_id).unwrap();
     assert_eq!(equipped.0, wearer_id);
-    let equipped_tank = app.world.get::<EquippedTank>(wearer_id).unwrap();
+    let equipped_tank = app.world().get::<EquippedTank>(wearer_id).unwrap();
     assert_eq!(equipped_tank.0, cylinder_2_id);
     // cylinder 1 should not be equipped
-    assert!(app.world.get::<Equipped>(cylinder_1_id).is_none());
+    assert!(app.world().get::<Equipped>(cylinder_1_id).is_none());
 }
 
 pub fn unequip_cylinder(
@@ -153,7 +153,7 @@ fn did_unequip_cylinder() {
     app.add_event::<CylinderUnequipEvent>();
     app.add_systems(Update, unequip_cylinder);
     let cylinder_id = app
-        .world
+        .world_mut()
         .spawn((
             Equippable,
             DivingCylinder {
@@ -164,17 +164,17 @@ fn did_unequip_cylinder() {
             },
         ))
         .id();
-    let wearer_id = app.world.spawn(EquippedTank(cylinder_id)).id();
-    app.world
+    let wearer_id = app.world_mut().spawn(EquippedTank(cylinder_id)).id();
+    app.world_mut()
         .get_entity_mut(cylinder_id)
         .unwrap()
         .insert(Equipped(wearer_id));
-    app.world
+    app.world_mut()
         .resource_mut::<Events<CylinderUnequipEvent>>()
         .send(CylinderUnequipEvent { wearer: wearer_id });
     app.update();
-    let wearer = app.world.get::<EquippedTank>(wearer_id);
+    let wearer = app.world().get::<EquippedTank>(wearer_id);
     assert!(wearer.is_none());
-    let worn_cylinder = app.world.get::<Equipped>(cylinder_id);
+    let worn_cylinder = app.world().get::<Equipped>(cylinder_id);
     assert!(worn_cylinder.is_none());
 }

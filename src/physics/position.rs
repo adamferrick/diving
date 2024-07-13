@@ -30,7 +30,7 @@ fn did_update_position() {
     app.add_systems(Update, update_position);
 
     let movable_id = app
-        .world
+        .world_mut()
         .spawn((
             Transform::from_translation(Vec3::ZERO),
             Velocity(Vec3::new(1., 1., 0.)),
@@ -38,7 +38,11 @@ fn did_update_position() {
         .id();
 
     app.update();
-    let new_translation = app.world.get::<Transform>(movable_id).unwrap().translation;
+    let new_translation = app
+        .world()
+        .get::<Transform>(movable_id)
+        .unwrap()
+        .translation;
 
     assert!(new_translation == Vec3::new(1., 1., 0.));
 }
@@ -55,7 +59,7 @@ fn depth_below_sea_level() {
     app.add_systems(Update, update_depth);
 
     let movable_id = app
-        .world
+        .world_mut()
         .spawn((
             Transform::from_translation(Vec3::new(0., SEA_LEVEL - 100., 0.)),
             Depth(0.),
@@ -63,7 +67,7 @@ fn depth_below_sea_level() {
         .id();
 
     app.update();
-    let new_depth = app.world.get::<Depth>(movable_id).unwrap().0;
+    let new_depth = app.world().get::<Depth>(movable_id).unwrap().0;
 
     assert!(new_depth == 100. / METERS_TRANSLATION_RATIO);
 }
@@ -74,7 +78,7 @@ fn depth_above_sea_level() {
     app.add_systems(Update, update_depth);
 
     let movable_id = app
-        .world
+        .world_mut()
         .spawn((
             Transform::from_translation(Vec3::new(0., SEA_LEVEL + 100., 0.)),
             Depth(0.),
@@ -82,7 +86,7 @@ fn depth_above_sea_level() {
         .id();
 
     app.update();
-    let new_depth = app.world.get::<Depth>(movable_id).unwrap().0;
+    let new_depth = app.world().get::<Depth>(movable_id).unwrap().0;
 
     assert!(new_depth == 0.);
 }

@@ -63,7 +63,7 @@ fn did_narcosis_damage() {
     app.add_event::<DamageEvent>();
     app.add_systems(Update, nitrogen_narcosis);
     let breather_id = app
-        .world
+        .world_mut()
         .spawn((
             NitrogenHazard {
                 n2_upper: 2.,
@@ -79,7 +79,7 @@ fn did_narcosis_damage() {
         ))
         .id();
     app.update();
-    let damage_events = app.world.resource::<Events<DamageEvent>>();
+    let damage_events = app.world().resource::<Events<DamageEvent>>();
     let mut damage_reader = damage_events.get_reader();
     let damage = damage_reader.read(damage_events).next().unwrap();
     assert_eq!(damage.target, breather_id);
@@ -91,7 +91,7 @@ fn did_no_narcosis_damage() {
     let mut app = App::new();
     app.add_event::<DamageEvent>();
     app.add_systems(Update, nitrogen_narcosis);
-    app.world.spawn((
+    app.world_mut().spawn((
         NitrogenHazard {
             n2_upper: 2.,
             damage_factor: 1.,
@@ -105,7 +105,7 @@ fn did_no_narcosis_damage() {
         },
     ));
     app.update();
-    let damage_events = app.world.resource::<Events<DamageEvent>>();
+    let damage_events = app.world().resource::<Events<DamageEvent>>();
     let mut damage_reader = damage_events.get_reader();
     let damage = damage_reader.read(damage_events).next();
     assert!(damage.is_none());

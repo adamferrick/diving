@@ -58,33 +58,33 @@ fn did_pick_up() {
     app.add_event::<ItemPickup>();
     app.add_systems(Update, pick_up_item);
     let bag_id = app
-        .world
+        .world_mut()
         .spawn(Bag {
             collectibles: Vec::new(),
             capacity: 2,
         })
         .id();
-    let item_id = app.world.spawn(Collectible).id();
-    app.world
+    let item_id = app.world_mut().spawn(Collectible).id();
+    app.world_mut()
         .resource_mut::<Events<ItemPickup>>()
         .send(ItemPickup {
             item: item_id,
             bag: bag_id,
         });
     app.update();
-    let collected = app.world.get::<Collected>(item_id).unwrap();
+    let collected = app.world().get::<Collected>(item_id).unwrap();
     assert_eq!(collected.0, bag_id);
-    let bag = app.world.get::<Bag>(bag_id).unwrap();
+    let bag = app.world().get::<Bag>(bag_id).unwrap();
     assert_eq!(bag.collectibles[0], item_id);
     assert_eq!(bag.collectibles.len(), 1);
     // should not be able to pick up items twice
-    app.world
+    app.world_mut()
         .resource_mut::<Events<ItemPickup>>()
         .send(ItemPickup {
             item: item_id,
             bag: bag_id,
         });
-    let bag = app.world.get::<Bag>(bag_id).unwrap();
+    let bag = app.world().get::<Bag>(bag_id).unwrap();
     assert_eq!(bag.collectibles.len(), 1);
 }
 
@@ -94,29 +94,29 @@ fn did_not_pick_up_no_capacity() {
     app.add_event::<ItemPickup>();
     app.add_systems(Update, pick_up_item);
     let bag_id = app
-        .world
+        .world_mut()
         .spawn(Bag {
             collectibles: Vec::new(),
             capacity: 1,
         })
         .id();
-    let item_1_id = app.world.spawn(Collectible).id();
-    let item_2_id = app.world.spawn(Collectible).id();
-    app.world
+    let item_1_id = app.world_mut().spawn(Collectible).id();
+    let item_2_id = app.world_mut().spawn(Collectible).id();
+    app.world_mut()
         .resource_mut::<Events<ItemPickup>>()
         .send(ItemPickup {
             item: item_1_id,
             bag: bag_id,
         });
     app.update();
-    app.world
+    app.world_mut()
         .resource_mut::<Events<ItemPickup>>()
         .send(ItemPickup {
             item: item_2_id,
             bag: bag_id,
         });
     app.update();
-    let bag = app.world.get::<Bag>(bag_id).unwrap();
+    let bag = app.world().get::<Bag>(bag_id).unwrap();
     assert_eq!(bag.collectibles[0], item_1_id);
     assert_eq!(bag.collectibles.len(), 1);
 }
@@ -143,19 +143,19 @@ fn did_drop() {
     app.add_event::<ItemDrop>();
     app.add_systems(Update, drop_item);
     let bag_id = app
-        .world
+        .world_mut()
         .spawn(Bag {
             collectibles: Vec::new(),
             capacity: 2,
         })
         .id();
-    let item_id = app.world.spawn((Collectible, Collected(bag_id))).id();
-    app.world
+    let item_id = app.world_mut().spawn((Collectible, Collected(bag_id))).id();
+    app.world_mut()
         .get_mut::<Bag>(bag_id)
         .unwrap()
         .collectibles
         .push(item_id);
-    app.world
+    app.world_mut()
         .resource_mut::<Events<ItemDrop>>()
         .send(ItemDrop { item: item_id });
     app.update();

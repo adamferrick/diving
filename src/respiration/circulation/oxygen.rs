@@ -76,7 +76,7 @@ fn did_toxicity_damage() {
     app.add_event::<DamageEvent>();
     app.add_systems(Update, oxygen_damage);
     let breather_id = app
-        .world
+        .world_mut()
         .spawn((
             OxygenHazard {
                 po2_upper: 3.,
@@ -93,7 +93,7 @@ fn did_toxicity_damage() {
         ))
         .id();
     app.update();
-    let damage_events = app.world.resource::<Events<DamageEvent>>();
+    let damage_events = app.world().resource::<Events<DamageEvent>>();
     let mut damage_reader = damage_events.get_reader();
     let damage = damage_reader.read(damage_events).next().unwrap();
     assert_eq!(damage.target, breather_id);
@@ -105,7 +105,7 @@ fn did_no_oxygen_damage() {
     let mut app = App::new();
     app.add_event::<DamageEvent>();
     app.add_systems(Update, oxygen_damage);
-    app.world.spawn((
+    app.world_mut().spawn((
         OxygenHazard {
             po2_upper: 3.,
             po2_lower: 1.,
@@ -120,7 +120,7 @@ fn did_no_oxygen_damage() {
         },
     ));
     app.update();
-    let damage_events = app.world.resource::<Events<DamageEvent>>();
+    let damage_events = app.world().resource::<Events<DamageEvent>>();
     let mut damage_reader = damage_events.get_reader();
     let damage = damage_reader.read(damage_events).next();
     assert!(damage.is_none());
@@ -132,7 +132,7 @@ fn did_hypoxia_damage() {
     app.add_event::<DamageEvent>();
     app.add_systems(Update, oxygen_damage);
     let breather_id = app
-        .world
+        .world_mut()
         .spawn((
             OxygenHazard {
                 po2_upper: 3.,
@@ -149,7 +149,7 @@ fn did_hypoxia_damage() {
         ))
         .id();
     app.update();
-    let damage_events = app.world.resource::<Events<DamageEvent>>();
+    let damage_events = app.world().resource::<Events<DamageEvent>>();
     let mut damage_reader = damage_events.get_reader();
     let damage = damage_reader.read(damage_events).next().unwrap();
     assert_eq!(damage.target, breather_id);

@@ -34,7 +34,7 @@ pub fn spawn_health_ui(mut commands: Commands) {
                     padding: UiRect::all(Val::Px(10.)),
                     ..default()
                 },
-                background_color: Color::BLUE.into(),
+                background_color: Srgba::rgb(0., 0., 1.).into(),
                 ..default()
             },
             Name::new("Ui Root"),

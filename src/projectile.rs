@@ -72,7 +72,7 @@ pub fn fire_projectile(
 ) {
     for fire_event in fire_events.read() {
         let shape = Mesh::from(fire_event.dims);
-        let color = ColorMaterial::from(Color::rgb(1., 0., 0.));
+        let color = ColorMaterial::from_color(Srgba::rgb(1., 0., 0.));
         let mesh_handle = meshes.add(shape);
         let material_handle = materials.add(color);
         if let Ok(ammo) = ammos.get_mut(fire_event.ammo) {
@@ -105,11 +105,11 @@ fn did_fire_projectile() {
     let mut app = App::new();
     app.add_event::<FireProjectile>();
     app.add_systems(Update, fire_projectile);
-    app.world.insert_resource(Assets::<Mesh>::default());
-    app.world
+    app.world_mut().insert_resource(Assets::<Mesh>::default());
+    app.world_mut()
         .insert_resource(Assets::<ColorMaterial>::default());
-    let ammo_id = app.world.spawn(Ammo::Infinite).id();
-    app.world
+    let ammo_id = app.world_mut().spawn(Ammo::Infinite).id();
+    app.world_mut()
         .resource_mut::<Events<FireProjectile>>()
         .send(FireProjectile {
             translation: Vec3::ZERO,
@@ -121,12 +121,12 @@ fn did_fire_projectile() {
     app.update();
     // should be one projectile
     assert!(app
-        .world
+        .world_mut()
         .query::<&Projectile>()
-        .get_single(&app.world)
+        .get_single(&app.world())
         .is_ok());
     let (damage, hitbox, velocity, transform, _) = app
-        .world
+        .world_mut()
         .query::<(
             &Damage,
             &RectangularHitbox,
@@ -134,7 +134,7 @@ fn did_fire_projectile() {
             &Transform,
             &Projectile,
         )>()
-        .single(&app.world);
+        .single(&app.world());
     // should have the values sent
     assert_eq!(damage.0, 1.);
     assert_eq!(hitbox.0, Rectangle::new(1., 1.));
@@ -147,11 +147,11 @@ fn did_fire_projectile_finite() {
     let mut app = App::new();
     app.add_event::<FireProjectile>();
     app.add_systems(Update, fire_projectile);
-    app.world.insert_resource(Assets::<Mesh>::default());
-    app.world
+    app.world_mut().insert_resource(Assets::<Mesh>::default());
+    app.world_mut()
         .insert_resource(Assets::<ColorMaterial>::default());
-    let ammo_id = app.world.spawn(Ammo::Finite(2)).id();
-    app.world
+    let ammo_id = app.world_mut().spawn(Ammo::Finite(2)).id();
+    app.world_mut()
         .resource_mut::<Events<FireProjectile>>()
         .send(FireProjectile {
             translation: Vec3::ZERO,
@@ -163,12 +163,12 @@ fn did_fire_projectile_finite() {
     app.update();
     // should be one projectile
     assert!(app
-        .world
+        .world_mut()
         .query::<&Projectile>()
-        .get_single(&app.world)
+        .get_single(&app.world())
         .is_ok());
     let (damage, hitbox, velocity, transform, _) = app
-        .world
+        .world_mut()
         .query::<(
             &Damage,
             &RectangularHitbox,
@@ -176,14 +176,14 @@ fn did_fire_projectile_finite() {
             &Transform,
             &Projectile,
         )>()
-        .single(&app.world);
+        .single(&app.world());
     // should have the values sent
     assert_eq!(damage.0, 1.);
     assert_eq!(hitbox.0, Rectangle::new(1., 1.));
     assert_eq!(velocity.0, Vec3::ONE);
     assert_eq!(transform.translation, Vec3::ZERO);
     // should have reduced ammo
-    if let Ammo::Finite(ammo) = app.world.get::<Ammo>(ammo_id).unwrap() {
+    if let Ammo::Finite(ammo) = app.world().get::<Ammo>(ammo_id).unwrap() {
         assert_eq!(*ammo, 1);
     } else {
         panic!();
@@ -195,11 +195,11 @@ fn did_not_fire_projectile_empty() {
     let mut app = App::new();
     app.add_event::<FireProjectile>();
     app.add_systems(Update, fire_projectile);
-    app.world.insert_resource(Assets::<Mesh>::default());
-    app.world
+    app.world_mut().insert_resource(Assets::<Mesh>::default());
+    app.world_mut()
         .insert_resource(Assets::<ColorMaterial>::default());
-    let ammo_id = app.world.spawn(Ammo::Finite(0)).id();
-    app.world
+    let ammo_id = app.world_mut().spawn(Ammo::Finite(0)).id();
+    app.world_mut()
         .resource_mut::<Events<FireProjectile>>()
         .send(FireProjectile {
             translation: Vec3::ZERO,
@@ -211,9 +211,9 @@ fn did_not_fire_projectile_empty() {
     app.update();
     // should be one projectile
     assert!(app
-        .world
+        .world_mut()
         .query::<&Projectile>()
-        .get_single(&app.world)
+        .get_single(&app.world())
         .is_err());
 }
 
@@ -245,24 +245,30 @@ fn hit_target() {
     app.add_event::<DamageEvent>();
     app.add_systems(Update, projectile_hit);
     const DAMAGE: f32 = 5.;
-    let projectile_id = app.world.spawn((Projectile, Damage(DAMAGE))).id();
-    let target_id = app.world.spawn((Health(10.),)).id();
+    let projectile_id = app.world_mut().spawn((Projectile, Damage(DAMAGE))).id();
+    let target_id = app.world_mut().spawn((Health(10.),)).id();
     // Send hit event
-    app.world
+    app.world_mut()
         .resource_mut::<Events<ProjectileHit>>()
         .send(ProjectileHit {
             projectile: projectile_id,
             target: target_id,
         });
     app.update();
-    let damage_events = app.world.resource::<Events<DamageEvent>>();
+    let damage_events = app.world().resource::<Events<DamageEvent>>();
     let mut damage_reader = damage_events.get_reader();
     let damage = damage_reader.read(damage_events).next().unwrap();
     // Should have sent a DamageEvent { target: target_id, damage: DAMAGE }
     assert_eq!(damage.target, target_id);
     assert_eq!(damage.damage, DAMAGE);
     // Projectile should have despawned
-    assert_eq!(app.world.query::<&Projectile>().iter(&app.world).len(), 0);
+    assert_eq!(
+        app.world_mut()
+            .query::<&Projectile>()
+            .iter(&app.world())
+            .len(),
+        0
+    );
 }
 
 #[test]
@@ -272,21 +278,27 @@ fn do_not_hit_dead_target() {
     app.add_event::<DamageEvent>();
     app.add_systems(Update, projectile_hit);
     const DAMAGE: f32 = 5.;
-    let projectile_id = app.world.spawn((Projectile, Damage(DAMAGE))).id();
-    let target_id = app.world.spawn((Health(0.), Dead)).id();
+    let projectile_id = app.world_mut().spawn((Projectile, Damage(DAMAGE))).id();
+    let target_id = app.world_mut().spawn((Health(0.), Dead)).id();
     // Send hit event
-    app.world
+    app.world_mut()
         .resource_mut::<Events<ProjectileHit>>()
         .send(ProjectileHit {
             projectile: projectile_id,
             target: target_id,
         });
     app.update();
-    let damage_events = app.world.resource::<Events<DamageEvent>>();
+    let damage_events = app.world().resource::<Events<DamageEvent>>();
     let mut damage_reader = damage_events.get_reader();
     let damage = damage_reader.read(damage_events).next();
     // Should be no damage events
     assert!(damage.is_none());
     // Projectile should not have despawned
-    assert_eq!(app.world.query::<&Projectile>().iter(&app.world).len(), 1);
+    assert_eq!(
+        app.world_mut()
+            .query::<&Projectile>()
+            .iter(&app.world())
+            .len(),
+        1
+    );
 }

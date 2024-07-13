@@ -34,7 +34,7 @@ pub fn spawn_obstacles(
     println!("Spawning obstacles...");
 
     let mesh = Mesh::from(Rectangle::new(OBSTACLE_WIDTH, OBSTACLE_HEIGHT));
-    let material = ColorMaterial::from(Color::rgb(0., 0., 1.));
+    let material = ColorMaterial::from_color(Srgba::rgb(0., 0., 1.));
 
     let mesh_handle = meshes.add(mesh);
     let material_handle = materials.add(material);

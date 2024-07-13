@@ -96,7 +96,7 @@ pub fn spawn_diver(
     println!("Spawning diver...");
 
     let mesh = Mesh::from(Rectangle::new(DIVER_WIDTH, DIVER_HEIGHT));
-    let material = ColorMaterial::from(Color::rgb(0., 1., 0.));
+    let material = ColorMaterial::from_color(Srgba::rgb(0., 1., 0.));
 
     let mesh_handle = meshes.add(mesh);
     let material_handle = materials.add(material);
@@ -188,9 +188,9 @@ fn did_fire_speargun() {
     app.add_systems(Update, fire_speargun);
     app.add_event::<FireProjectile>();
 
-    let ammo_id = app.world.spawn(Ammo::Infinite).id();
+    let ammo_id = app.world_mut().spawn(Ammo::Infinite).id();
 
-    app.world.spawn((
+    app.world_mut().spawn((
         Diver,
         Velocity(Vec3::ZERO),
         Transform::from_translation(Vec3::ZERO),
@@ -204,14 +204,16 @@ fn did_fire_speargun() {
 
     app.update();
     // should have sent an event
-    let speargun_fire_events = app.world.resource::<Events<FireProjectile>>();
+    let speargun_fire_events = app.world().resource::<Events<FireProjectile>>();
     let reader = speargun_fire_events.get_reader();
     assert!(!reader.is_empty(speargun_fire_events));
 
-    app.world.resource_mut::<ButtonInput<MouseButton>>().clear();
+    app.world_mut()
+        .resource_mut::<ButtonInput<MouseButton>>()
+        .clear();
     app.update();
     // should not have sent an event
-    let speargun_fire_events = app.world.resource::<Events<FireProjectile>>();
+    let speargun_fire_events = app.world().resource::<Events<FireProjectile>>();
     assert_eq!(speargun_fire_events.len(), 1);
 }
 

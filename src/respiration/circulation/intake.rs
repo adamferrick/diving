@@ -30,7 +30,7 @@ fn did_intake_gas() {
     app.add_event::<CirculateGas>();
     app.add_systems(Update, intake_gas);
     let breather_id = app
-        .world
+        .world_mut()
         .spawn(BloodstreamContent {
             capacity: 100.,
             amount_remaining: 50.,
@@ -38,7 +38,7 @@ fn did_intake_gas() {
             proportion_of_nitrogen: 0.,
         })
         .id();
-    app.world
+    app.world_mut()
         .resource_mut::<Events<CirculateGas>>()
         .send(CirculateGas {
             entity: breather_id,
@@ -47,6 +47,6 @@ fn did_intake_gas() {
             proportion_of_nitrogen: 0.,
         });
     app.update();
-    let new_bloodstream = app.world.get::<BloodstreamContent>(breather_id).unwrap();
+    let new_bloodstream = app.world().get::<BloodstreamContent>(breather_id).unwrap();
     assert_eq!(new_bloodstream.amount_remaining, 100.);
 }

@@ -49,16 +49,16 @@ fn did_damage() {
     let mut app = App::new();
     app.add_event::<DamageEvent>();
     app.add_systems(Update, damage_health);
-    let damagable_id = app.world.spawn(Health(10.)).id();
+    let damagable_id = app.world_mut().spawn(Health(10.)).id();
     // send damage event
-    app.world
+    app.world_mut()
         .resource_mut::<Events<DamageEvent>>()
         .send(DamageEvent {
             target: damagable_id,
             damage: 5.,
         });
     app.update();
-    let new_health = app.world.get::<Health>(damagable_id).unwrap().0;
+    let new_health = app.world().get::<Health>(damagable_id).unwrap().0;
     assert_eq!(new_health, 5.);
 }
 
@@ -67,16 +67,16 @@ fn dont_damage_dead() {
     let mut app = App::new();
     app.add_event::<DamageEvent>();
     app.add_systems(Update, damage_health);
-    let damagable_id = app.world.spawn((Health(0.), Dead)).id();
+    let damagable_id = app.world_mut().spawn((Health(0.), Dead)).id();
     // send damage event
-    app.world
+    app.world_mut()
         .resource_mut::<Events<DamageEvent>>()
         .send(DamageEvent {
             target: damagable_id,
             damage: 5.,
         });
     app.update();
-    let new_health = app.world.get::<Health>(damagable_id).unwrap().0;
+    let new_health = app.world().get::<Health>(damagable_id).unwrap().0;
     assert_eq!(new_health, 0.);
 }
 
@@ -93,17 +93,17 @@ pub fn kill(mut commands: Commands, living: Query<(Entity, &Health), Without<Dea
 fn kill_entity() {
     let mut app = App::new();
     app.add_systems(Update, kill);
-    let damagable_id = app.world.spawn(Health(0.)).id();
-    assert!(app.world.get::<Dead>(damagable_id).is_none());
+    let damagable_id = app.world_mut().spawn(Health(0.)).id();
+    assert!(app.world().get::<Dead>(damagable_id).is_none());
     app.update();
-    assert!(app.world.get::<Dead>(damagable_id).is_some());
+    assert!(app.world().get::<Dead>(damagable_id).is_some());
 }
 
 #[test]
 fn do_not_kill_entity() {
     let mut app = App::new();
     app.add_systems(Update, kill);
-    let damagable_id = app.world.spawn(Health(1.)).id();
+    let damagable_id = app.world_mut().spawn(Health(1.)).id();
     app.update();
-    assert!(app.world.get::<Dead>(damagable_id).is_none());
+    assert!(app.world().get::<Dead>(damagable_id).is_none());
 }
