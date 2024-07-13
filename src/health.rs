@@ -30,6 +30,9 @@ pub fn health_plugin(app: &mut App) {
         )
             .run_if(in_state(PausedState::Running)),
     );
+    app.register_type::<Health>();
+    app.register_type::<Damage>();
+    app.register_type::<Dead>();
 }
 
 pub fn damage_health(

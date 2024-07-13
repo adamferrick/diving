@@ -28,6 +28,7 @@ pub fn nitrogen_plugin(app: &mut App) {
         FixedUpdate,
         nitrogen_narcosis.run_if(in_state(PausedState::Running)),
     );
+    app.register_type::<NitrogenHazard>();
 }
 
 pub fn nitrogen_narcosis(

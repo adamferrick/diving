@@ -33,6 +33,7 @@ pub fn decompression_plugin(app: &mut App) {
         )
             .run_if(in_state(PausedState::Running)),
     );
+    app.register_type::<GasExchangeInLungs>();
 }
 
 pub fn outgassing_load(

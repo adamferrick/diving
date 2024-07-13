@@ -35,6 +35,9 @@ pub fn bag_plugin(app: &mut App) {
         FixedUpdate,
         (pick_up_item, drop_item).run_if(in_state(PausedState::Running)),
     );
+    app.register_type::<Collectible>();
+    app.register_type::<Collected>();
+    app.register_type::<Bag>();
 }
 
 pub fn pick_up_item(

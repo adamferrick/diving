@@ -32,6 +32,7 @@ pub fn equalization_plugin(app: &mut App) {
             .run_if(in_state(PausedState::Running))
             .before(crate::respiration::circulation::intake::intake_gas),
     );
+    app.register_type::<BloodstreamPressure>();
 }
 
 fn weighted_average(value_1: f32, weight_1: f32, value_2: f32, weight_2: f32) -> f32 {

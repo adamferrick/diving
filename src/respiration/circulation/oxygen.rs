@@ -31,6 +31,7 @@ pub fn oxygen_plugin(app: &mut App) {
         FixedUpdate,
         oxygen_damage.run_if(in_state(PausedState::Running)),
     );
+    app.register_type::<OxygenHazard>();
 }
 
 pub fn oxygen_damage(

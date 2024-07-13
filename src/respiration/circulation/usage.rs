@@ -24,6 +24,7 @@ pub fn usage_plugin(app: &mut App) {
         )
             .run_if(in_state(PausedState::Running)),
     );
+    app.register_type::<GasUsageRate>();
 }
 
 pub fn usage(mut gas_users: Query<(&GasUsageRate, &mut BloodstreamContent)>) {

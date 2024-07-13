@@ -22,6 +22,8 @@ pub fn ui_plugin(app: &mut App) {
             update_respiration_ui.after(inhalation),
         ),
     );
+    app.register_type::<HealthText>();
+    app.register_type::<CirculationText>();
 }
 
 pub fn spawn_health_ui(mut commands: Commands) {

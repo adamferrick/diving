@@ -17,6 +17,7 @@ pub fn states_plugin(app: &mut App) {
     app.add_systems(Update, toggle_pause);
     app.add_systems(OnEnter(PausedState::Paused), spawn_paused_message);
     app.add_systems(OnExit(PausedState::Paused), despawn_paused_message);
+    app.register_type::<PauseMenu>();
 }
 
 pub fn toggle_pause(

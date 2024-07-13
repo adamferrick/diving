@@ -60,6 +60,9 @@ pub fn inhalation_plugin(app: &mut App) {
         FixedUpdate,
         inhalation.run_if(in_state(PausedState::Running)),
     );
+    app.register_type::<DivingCylinder>();
+    app.register_type::<BloodstreamContent>();
+    app.register_type::<EquippedTank>();
 }
 
 pub fn inhalation(

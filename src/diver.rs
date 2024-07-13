@@ -88,6 +88,8 @@ pub fn diver_plugin(app: &mut App) {
         )
             .run_if(in_state(PausedState::Running)),
     );
+    app.register_type::<Diver>();
+    app.register_type::<EquippedAmmo>();
 }
 
 pub fn spawn_diver(

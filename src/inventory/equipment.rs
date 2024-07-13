@@ -29,6 +29,8 @@ pub fn equipment_plugin(app: &mut App) {
         FixedUpdate,
         (equip_cylinder, unequip_cylinder).run_if(in_state(PausedState::Running)),
     );
+    app.register_type::<Equippable>();
+    app.register_type::<Equipped>();
 }
 
 pub fn equip_cylinder(

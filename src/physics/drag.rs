@@ -12,6 +12,7 @@ pub fn drag_plugin(app: &mut App) {
         FixedUpdate,
         apply_drag.run_if(in_state(PausedState::Running)),
     );
+    app.register_type::<Drag>();
 }
 
 pub fn apply_drag(mut movables: Query<(&Drag, &mut Velocity)>) {

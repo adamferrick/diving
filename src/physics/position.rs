@@ -18,6 +18,8 @@ pub fn position_plugin(app: &mut App) {
         (update_position, update_depth.after(update_position))
             .run_if(in_state(PausedState::Running)),
     );
+    app.register_type::<Velocity>();
+    app.register_type::<Depth>();
 }
 
 pub fn update_position(mut movables: Query<(&mut Transform, &Velocity)>) {

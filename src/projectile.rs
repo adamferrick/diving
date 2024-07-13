@@ -63,6 +63,8 @@ pub fn projectile_plugin(app: &mut App) {
         (projectile_hit.after(projectile_collision), fire_projectile)
             .run_if(in_state(PausedState::Running)),
     );
+    app.register_type::<Projectile>();
+    app.register_type::<Ammo>();
 }
 
 pub fn fire_projectile(

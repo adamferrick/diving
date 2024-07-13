@@ -26,6 +26,8 @@ pub fn collision_plugin(app: &mut App) {
         )
             .run_if(in_state(PausedState::Running)),
     );
+    app.register_type::<RectangularHitbox>();
+    app.register_type::<Obstacle>();
 }
 
 pub fn spawn_obstacles(

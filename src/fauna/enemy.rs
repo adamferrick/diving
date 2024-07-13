@@ -46,6 +46,7 @@ pub fn enemy_plugin(app: &mut App) {
         FixedUpdate,
         enemy_seek_diver.run_if(in_state(PausedState::Running)),
     );
+    app.register_type::<Enemy>();
 }
 
 pub fn spawn_enemies(
