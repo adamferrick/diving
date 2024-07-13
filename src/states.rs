@@ -58,7 +58,9 @@ pub fn spawn_paused_message(mut commands: Commands) {
         ..default()
     };
 
-    let container_id = commands.spawn((container, PauseMenu)).id();
+    let container_id = commands
+        .spawn((container, PauseMenu, Name::new("Pause menu")))
+        .id();
     let message_id = commands.spawn(message).id();
     commands.entity(container_id).push_children(&[message_id]);
 }

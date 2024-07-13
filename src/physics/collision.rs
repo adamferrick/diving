@@ -52,6 +52,7 @@ pub fn spawn_obstacles(
             transform: Transform::from_translation(Vec3::new(100., 100., 0.)),
             ..default()
         },
+        Name::new("Obstacle"),
     ));
 }
 

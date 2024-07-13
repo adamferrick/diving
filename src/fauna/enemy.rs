@@ -67,6 +67,7 @@ pub fn spawn_enemies(
                 transform: Transform::from_translation(Vec3::new(x, y, 0.)),
                 ..default()
             },
+            Name::new("Enemy"),
         ));
     };
 

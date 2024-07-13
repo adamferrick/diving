@@ -114,11 +114,16 @@ pub fn spawn_diver(
                 proportion_of_nitrogen: DIVER_TANK_NITROGEN,
             },
             Collectible,
+            Name::new("Cylinder"),
         ))
         .id();
 
     let ammo_id = commands
-        .spawn((Collectible, Ammo::Finite(DIVER_INITIAL_AMMO)))
+        .spawn((
+            Collectible,
+            Ammo::Finite(DIVER_INITIAL_AMMO),
+            Name::new("Ammo"),
+        ))
         .id();
 
     let diver_id = commands
@@ -134,6 +139,7 @@ pub fn spawn_diver(
                 transform: Transform::from_translation(Vec3::new(0., 0., 0.)),
                 ..default()
             },
+            Name::new("Diver"),
         ))
         .id();
     commands.entity(ammo_id).insert(Collected(diver_id));
