@@ -60,8 +60,7 @@ pub fn projectile_plugin(app: &mut App) {
     app.add_event::<ProjectileHit>();
     app.add_systems(
         FixedUpdate,
-        (projectile_hit.after(projectile_collision), fire_projectile)
-            .in_set(RunningStateSet),
+        (projectile_hit.after(projectile_collision), fire_projectile).in_set(RunningStateSet),
     );
     app.register_type::<Projectile>();
     app.register_type::<Ammo>();

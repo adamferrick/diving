@@ -5,10 +5,7 @@ use crate::respiration::BloodstreamContent;
 use crate::states::RunningStateSet;
 
 pub fn intake_plugin(app: &mut App) {
-    app.add_systems(
-        FixedUpdate,
-        intake_gas.in_set(RunningStateSet),
-    );
+    app.add_systems(FixedUpdate, intake_gas.in_set(RunningStateSet));
 }
 
 pub fn intake_gas(

@@ -27,10 +27,7 @@ impl Default for OxygenHazard {
 }
 
 pub fn oxygen_plugin(app: &mut App) {
-    app.add_systems(
-        FixedUpdate,
-        oxygen_damage.in_set(RunningStateSet),
-    );
+    app.add_systems(FixedUpdate, oxygen_damage.in_set(RunningStateSet));
     app.register_type::<OxygenHazard>();
 }
 

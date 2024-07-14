@@ -56,10 +56,7 @@ pub struct BreathTaken {
 
 pub fn inhalation_plugin(app: &mut App) {
     app.add_event::<BreathTaken>();
-    app.add_systems(
-        FixedUpdate,
-        inhalation.in_set(RunningStateSet),
-    );
+    app.add_systems(FixedUpdate, inhalation.in_set(RunningStateSet));
     app.register_type::<DivingCylinder>();
     app.register_type::<BloodstreamContent>();
     app.register_type::<EquippedTank>();

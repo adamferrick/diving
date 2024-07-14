@@ -8,10 +8,7 @@ use crate::states::RunningStateSet;
 pub struct Drag(pub f32);
 
 pub fn drag_plugin(app: &mut App) {
-    app.add_systems(
-        FixedUpdate,
-        apply_drag.in_set(RunningStateSet),
-    );
+    app.add_systems(FixedUpdate, apply_drag.in_set(RunningStateSet));
     app.register_type::<Drag>();
 }
 

@@ -15,8 +15,7 @@ pub struct Depth(pub f32);
 pub fn position_plugin(app: &mut App) {
     app.add_systems(
         FixedUpdate,
-        (update_position, update_depth.after(update_position))
-            .in_set(RunningStateSet),
+        (update_position, update_depth.after(update_position)).in_set(RunningStateSet),
     );
     app.register_type::<Velocity>();
     app.register_type::<Depth>();

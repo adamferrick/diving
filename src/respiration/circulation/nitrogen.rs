@@ -24,10 +24,7 @@ impl Default for NitrogenHazard {
 }
 
 pub fn nitrogen_plugin(app: &mut App) {
-    app.add_systems(
-        FixedUpdate,
-        nitrogen_narcosis.in_set(RunningStateSet),
-    );
+    app.add_systems(FixedUpdate, nitrogen_narcosis.in_set(RunningStateSet));
     app.register_type::<NitrogenHazard>();
 }
 

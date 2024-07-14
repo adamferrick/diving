@@ -20,7 +20,10 @@ pub fn states_plugin(app: &mut App) {
     app.add_systems(Update, toggle_pause);
     app.add_systems(OnEnter(GameState::Paused), spawn_paused_message);
     app.add_systems(OnExit(GameState::Paused), despawn_paused_message);
-    app.configure_sets(FixedUpdate, RunningStateSet.run_if(in_state(GameState::Running)));
+    app.configure_sets(
+        FixedUpdate,
+        RunningStateSet.run_if(in_state(GameState::Running)),
+    );
     app.register_type::<PauseMenu>();
 }
 

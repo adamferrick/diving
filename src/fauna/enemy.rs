@@ -42,10 +42,7 @@ impl EnemyBundle {
 
 pub fn enemy_plugin(app: &mut App) {
     app.add_systems(Startup, spawn_enemies);
-    app.add_systems(
-        FixedUpdate,
-        enemy_seek_diver.in_set(RunningStateSet),
-    );
+    app.add_systems(FixedUpdate, enemy_seek_diver.in_set(RunningStateSet));
     app.register_type::<Enemy>();
 }
 
