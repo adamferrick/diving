@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use crate::position::Depth;
 use crate::respiration::circulation::*;
 use crate::respiration::BloodstreamContent;
-use crate::states::PausedState;
+use crate::states::GameState;
 
 const ATMOSPHERIC_PRESSURE_BAR: f32 = 1.;
 const BAR_MSW_RATIO: f32 = 1. / 10.;
@@ -29,7 +29,7 @@ pub fn equalization_plugin(app: &mut App) {
     app.add_systems(
         FixedUpdate,
         (equalize_pressure, equalize_gases)
-            .run_if(in_state(PausedState::Running))
+            .run_if(in_state(GameState::Running))
             .before(crate::respiration::circulation::intake::intake_gas),
     );
     app.register_type::<BloodstreamPressure>();

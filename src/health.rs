@@ -1,5 +1,5 @@
 use crate::projectile::*;
-use crate::states::PausedState;
+use crate::states::GameState;
 use bevy::prelude::*;
 
 #[derive(Component, Reflect)]
@@ -28,7 +28,7 @@ pub fn health_plugin(app: &mut App) {
             damage_health.after(projectile_hit),
             kill.after(damage_health),
         )
-            .run_if(in_state(PausedState::Running)),
+            .run_if(in_state(GameState::Running)),
     );
     app.register_type::<Health>();
     app.register_type::<Damage>();

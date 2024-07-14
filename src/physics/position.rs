@@ -16,7 +16,7 @@ pub fn position_plugin(app: &mut App) {
     app.add_systems(
         FixedUpdate,
         (update_position, update_depth.after(update_position))
-            .run_if(in_state(PausedState::Running)),
+            .run_if(in_state(GameState::Running)),
     );
     app.register_type::<Velocity>();
     app.register_type::<Depth>();

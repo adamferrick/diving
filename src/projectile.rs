@@ -61,7 +61,7 @@ pub fn projectile_plugin(app: &mut App) {
     app.add_systems(
         FixedUpdate,
         (projectile_hit.after(projectile_collision), fire_projectile)
-            .run_if(in_state(PausedState::Running)),
+            .run_if(in_state(GameState::Running)),
     );
     app.register_type::<Projectile>();
     app.register_type::<Ammo>();

@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::inhalation::*;
-use crate::states::PausedState;
+use crate::states::GameState;
 
 #[derive(Component, Reflect)]
 #[reflect(Component)]
@@ -27,7 +27,7 @@ pub fn equipment_plugin(app: &mut App) {
     app.add_event::<CylinderUnequipEvent>();
     app.add_systems(
         FixedUpdate,
-        (equip_cylinder, unequip_cylinder).run_if(in_state(PausedState::Running)),
+        (equip_cylinder, unequip_cylinder).run_if(in_state(GameState::Running)),
     );
     app.register_type::<Equippable>();
     app.register_type::<Equipped>();

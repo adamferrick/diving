@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::respiration::circulation::BloodstreamPressure;
 use crate::respiration::BloodstreamContent;
-use crate::states::PausedState;
+use crate::states::GameState;
 use crate::DamageEvent;
 
 const MAX_PO2_HUMAN: f32 = 1.4;
@@ -29,7 +29,7 @@ impl Default for OxygenHazard {
 pub fn oxygen_plugin(app: &mut App) {
     app.add_systems(
         FixedUpdate,
-        oxygen_damage.run_if(in_state(PausedState::Running)),
+        oxygen_damage.run_if(in_state(GameState::Running)),
     );
     app.register_type::<OxygenHazard>();
 }
