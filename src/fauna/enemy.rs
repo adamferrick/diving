@@ -4,7 +4,7 @@ use bevy::sprite::MaterialMesh2dBundle;
 use crate::collision::RectangularHitbox;
 use crate::drag::Drag;
 use crate::position::Velocity;
-use crate::states::GameState;
+use crate::states::RunningStateSet;
 use crate::Dead;
 use crate::Diver;
 use crate::Health;
@@ -44,7 +44,7 @@ pub fn enemy_plugin(app: &mut App) {
     app.add_systems(Startup, spawn_enemies);
     app.add_systems(
         FixedUpdate,
-        enemy_seek_diver.run_if(in_state(GameState::Running)),
+        enemy_seek_diver.in_set(RunningStateSet),
     );
     app.register_type::<Enemy>();
 }

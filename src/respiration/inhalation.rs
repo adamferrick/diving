@@ -1,5 +1,5 @@
 use crate::circulation::CirculateGas;
-use crate::GameState;
+use crate::states::RunningStateSet;
 use bevy::prelude::*;
 
 const AIR_O2_RATIO: f32 = 0.21;
@@ -58,7 +58,7 @@ pub fn inhalation_plugin(app: &mut App) {
     app.add_event::<BreathTaken>();
     app.add_systems(
         FixedUpdate,
-        inhalation.run_if(in_state(GameState::Running)),
+        inhalation.in_set(RunningStateSet),
     );
     app.register_type::<DivingCylinder>();
     app.register_type::<BloodstreamContent>();

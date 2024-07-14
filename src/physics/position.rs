@@ -1,4 +1,4 @@
-use crate::states::*;
+use crate::states::RunningStateSet;
 use bevy::prelude::*;
 
 pub const SEA_LEVEL: f32 = 0.;
@@ -16,7 +16,7 @@ pub fn position_plugin(app: &mut App) {
     app.add_systems(
         FixedUpdate,
         (update_position, update_depth.after(update_position))
-            .run_if(in_state(GameState::Running)),
+            .in_set(RunningStateSet),
     );
     app.register_type::<Velocity>();
     app.register_type::<Depth>();

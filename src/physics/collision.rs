@@ -1,7 +1,7 @@
 use crate::health::*;
 use crate::position::*;
 use crate::projectile::*;
-use crate::states::GameState;
+use crate::states::RunningStateSet;
 use bevy::prelude::*;
 use bevy::sprite::MaterialMesh2dBundle;
 
@@ -24,7 +24,7 @@ pub fn collision_plugin(app: &mut App) {
             projectile_collision.after(update_position),
             obstacle_collision.after(update_position),
         )
-            .run_if(in_state(GameState::Running)),
+            .in_set(RunningStateSet),
     );
     app.register_type::<RectangularHitbox>();
     app.register_type::<Obstacle>();

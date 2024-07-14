@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::states::GameState;
+use crate::states::RunningStateSet;
 
 #[derive(Component, Reflect)]
 #[reflect(Component)]
@@ -33,7 +33,7 @@ pub fn bag_plugin(app: &mut App) {
     app.add_event::<ItemDrop>();
     app.add_systems(
         FixedUpdate,
-        (pick_up_item, drop_item).run_if(in_state(GameState::Running)),
+        (pick_up_item, drop_item).in_set(RunningStateSet),
     );
     app.register_type::<Collectible>();
     app.register_type::<Collected>();
