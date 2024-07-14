@@ -6,6 +6,7 @@ pub enum GameState {
     #[default]
     Paused,
     Running,
+    OpenInventory,
 }
 
 #[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
@@ -28,14 +29,14 @@ pub fn states_plugin(app: &mut App) {
 }
 
 pub fn toggle_pause(
-    paused_state: Res<State<GameState>>,
-    mut next_paused_state: ResMut<NextState<GameState>>,
+    game_state: Res<State<GameState>>,
+    mut next_game_state: ResMut<NextState<GameState>>,
     keys: Res<ButtonInput<KeyCode>>,
 ) {
     if keys.just_pressed(KeyCode::Escape) {
-        match paused_state.get() {
-            GameState::Paused => next_paused_state.set(GameState::Running),
-            GameState::Running => next_paused_state.set(GameState::Paused),
+        match game_state.get() {
+            GameState::Paused => next_game_state.set(GameState::Running),
+            _ => next_game_state.set(GameState::Paused),
         }
     }
 }

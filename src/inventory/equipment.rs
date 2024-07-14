@@ -1,7 +1,8 @@
 use bevy::prelude::*;
 
+use crate::diver::Diver;
 use crate::inhalation::*;
-use crate::states::RunningStateSet;
+use crate::states::*;
 
 #[derive(Component, Reflect)]
 #[reflect(Component)]
@@ -10,6 +11,10 @@ pub struct Equippable;
 #[derive(Component, Reflect)]
 #[reflect(Component)]
 pub struct Equipped(pub Entity);
+
+#[derive(Component, Reflect)]
+#[reflect(Component)]
+pub struct EquipmentMenu;
 
 #[derive(Event)]
 pub struct CylinderEquipEvent {
@@ -29,6 +34,9 @@ pub fn equipment_plugin(app: &mut App) {
         FixedUpdate,
         (equip_cylinder, unequip_cylinder).in_set(RunningStateSet),
     );
+    app.add_systems(Update, toggle_inventory);
+    app.add_systems(OnEnter(GameState::OpenInventory), spawn_equipment_menu);
+    app.add_systems(OnExit(GameState::OpenInventory), despawn_equipment_menu);
     app.register_type::<Equippable>();
     app.register_type::<Equipped>();
 }
@@ -181,4 +189,69 @@ fn did_unequip_cylinder() {
     assert!(wearer.is_none());
     let worn_cylinder = app.world().get::<Equipped>(cylinder_id);
     assert!(worn_cylinder.is_none());
+}
+
+pub fn toggle_inventory(
+    game_state: Res<State<GameState>>,
+    mut next_game_state: ResMut<NextState<GameState>>,
+    keys: Res<ButtonInput<KeyCode>>,
+) {
+    if keys.just_pressed(KeyCode::KeyI) {
+        match game_state.get() {
+            GameState::Running => next_game_state.set(GameState::OpenInventory),
+            GameState::OpenInventory => next_game_state.set(GameState::Running),
+            _ => (),
+        }
+    }
+}
+
+pub fn spawn_equipment_menu(
+    mut commands: Commands,
+    equipped_cylinder: Query<&EquippedTank, With<Diver>>,
+    names: Query<&Name>,
+) {
+    let container = NodeBundle {
+        style: Style {
+            width: Val::Percent(50.),
+            height: Val::Percent(50.),
+            align_self: AlignSelf::Center,
+            justify_self: JustifySelf::Center,
+            align_items: AlignItems::Center,
+            justify_content: JustifyContent::Center,
+            ..default()
+        },
+        background_color: Srgba::rgb(0., 0., 1.).into(),
+        ..default()
+    };
+    let cylinder_name = match equipped_cylinder.get_single() {
+        Ok(equipped) => match names.get(equipped.0) {
+            Ok(name) => name,
+            _ => "UNNAMED ENTITY",
+        },
+        _ => "",
+    };
+    let message = TextBundle {
+        text: Text::from_section(
+            format!("Cylinder: {}", cylinder_name),
+            TextStyle {
+                font_size: crate::FONT_SIZE,
+                ..default()
+            },
+        ),
+        ..default()
+    };
+    let container_id = commands
+        .spawn((container, EquipmentMenu, Name::new("Equipment menu")))
+        .id();
+    let message_id = commands.spawn(message).id();
+    commands.entity(container_id).push_children(&[message_id]);
+}
+
+pub fn despawn_equipment_menu(
+    mut commands: Commands,
+    equipment_menus: Query<Entity, With<EquipmentMenu>>,
+) {
+    if let Ok(equipment_menu) = equipment_menus.get_single() {
+        commands.entity(equipment_menu).despawn_recursive();
+    }
 }
