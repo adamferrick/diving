@@ -35,8 +35,8 @@ pub fn equipment_plugin(app: &mut App) {
         (equip_cylinder, unequip_cylinder).in_set(RunningStateSet),
     );
     app.add_systems(Update, toggle_inventory);
-    app.add_systems(OnEnter(GameState::OpenInventory), spawn_equipment_menu);
-    app.add_systems(OnExit(GameState::OpenInventory), despawn_equipment_menu);
+    app.add_systems(OnEnter(InGameMenuState::Inventory), spawn_equipment_menu);
+    app.add_systems(OnExit(InGameMenuState::Inventory), despawn_equipment_menu);
     app.register_type::<Equippable>();
     app.register_type::<Equipped>();
 }
@@ -193,14 +193,14 @@ fn did_unequip_cylinder() {
 
 pub fn toggle_inventory(
     game_state: Res<State<GameState>>,
-    mut next_game_state: ResMut<NextState<GameState>>,
+    in_game_menu_state: Res<State<InGameMenuState>>,
+    mut next_in_game_menu_state: ResMut<NextState<InGameMenuState>>,
     keys: Res<ButtonInput<KeyCode>>,
 ) {
-    if keys.just_pressed(KeyCode::KeyI) {
-        match game_state.get() {
-            GameState::Running => next_game_state.set(GameState::OpenInventory),
-            GameState::OpenInventory => next_game_state.set(GameState::Running),
-            _ => (),
+    if keys.just_pressed(KeyCode::KeyI) && *game_state.get() == GameState::Running {
+        match in_game_menu_state.get() {
+            InGameMenuState::Inventory => next_in_game_menu_state.set(InGameMenuState::NoMenu),
+            _ => next_in_game_menu_state.set(InGameMenuState::Inventory),
         }
     }
 }

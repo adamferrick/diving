@@ -6,11 +6,20 @@ pub enum GameState {
     #[default]
     Paused,
     Running,
-    OpenInventory,
+}
+
+#[derive(States, Default, Debug, Clone, PartialEq, Eq, Hash)]
+pub enum InGameMenuState {
+    #[default]
+    NoMenu,
+    Inventory,
 }
 
 #[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
 pub struct RunningStateSet;
+
+#[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
+pub struct NoMenuStateSet;
 
 #[derive(Component, Reflect)]
 #[reflect(Component)]
@@ -18,12 +27,16 @@ pub struct PauseMenu;
 
 pub fn states_plugin(app: &mut App) {
     app.init_state::<GameState>();
+    app.init_state::<InGameMenuState>();
     app.add_systems(Update, toggle_pause);
     app.add_systems(OnEnter(GameState::Paused), spawn_paused_message);
     app.add_systems(OnExit(GameState::Paused), despawn_paused_message);
     app.configure_sets(
         FixedUpdate,
-        RunningStateSet.run_if(in_state(GameState::Running)),
+        (
+            RunningStateSet.run_if(in_state(GameState::Running)),
+            NoMenuStateSet.run_if(in_state(InGameMenuState::NoMenu)),
+        ),
     );
     app.register_type::<PauseMenu>();
 }

@@ -5,7 +5,7 @@ use crate::health::*;
 use crate::position::*;
 use crate::projectile::*;
 use crate::respiration::inhalation::*;
-use crate::states::RunningStateSet;
+use crate::states::*;
 use crate::BreatherBundle;
 use crate::CursorPosition;
 use bevy::prelude::*;
@@ -86,7 +86,8 @@ pub fn diver_plugin(app: &mut App) {
                 .after(crate::update_cursor),
             player_inhale.before(inhalation).after(update_position),
         )
-            .in_set(RunningStateSet),
+            .in_set(RunningStateSet)
+            .in_set(NoMenuStateSet),
     );
     app.register_type::<Diver>();
     app.register_type::<EquippedAmmo>();
