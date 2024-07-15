@@ -2,6 +2,7 @@ use bevy::prelude::*;
 
 use crate::diver::Diver;
 use crate::inhalation::*;
+use crate::inventory::inventory_menu::*;
 use crate::states::*;
 
 #[derive(Component, Reflect)]
@@ -35,10 +36,13 @@ pub fn equipment_plugin(app: &mut App) {
         (equip_cylinder, unequip_cylinder).in_set(RunningStateSet),
     );
     app.add_systems(Update, toggle_inventory);
-    app.add_systems(OnEnter(InGameMenuState::Inventory), spawn_equipment_menu);
-    app.add_systems(OnExit(InGameMenuState::Inventory), despawn_equipment_menu);
+    app.add_systems(
+        OnEnter(InGameMenuState::Inventory),
+        spawn_equipment_menu.after(spawn_inventory_menu),
+    );
     app.register_type::<Equippable>();
     app.register_type::<Equipped>();
+    app.register_type::<EquipmentMenu>();
 }
 
 pub fn equip_cylinder(
@@ -208,21 +212,9 @@ pub fn toggle_inventory(
 pub fn spawn_equipment_menu(
     mut commands: Commands,
     equipped_cylinder: Query<&EquippedTank, With<Diver>>,
+    inventory_menus: Query<Entity, With<InventoryMenu>>,
     names: Query<&Name>,
 ) {
-    let container = NodeBundle {
-        style: Style {
-            width: Val::Percent(50.),
-            height: Val::Percent(50.),
-            align_self: AlignSelf::Center,
-            justify_self: JustifySelf::Center,
-            align_items: AlignItems::Center,
-            justify_content: JustifyContent::Center,
-            ..default()
-        },
-        background_color: Srgba::rgb(0., 0., 1.).into(),
-        ..default()
-    };
     let cylinder_name = match equipped_cylinder.get_single() {
         Ok(equipped) => match names.get(equipped.0) {
             Ok(name) => name,
@@ -240,18 +232,8 @@ pub fn spawn_equipment_menu(
         ),
         ..default()
     };
-    let container_id = commands
-        .spawn((container, EquipmentMenu, Name::new("Equipment menu")))
-        .id();
     let message_id = commands.spawn(message).id();
-    commands.entity(container_id).push_children(&[message_id]);
-}
-
-pub fn despawn_equipment_menu(
-    mut commands: Commands,
-    equipment_menus: Query<Entity, With<EquipmentMenu>>,
-) {
-    if let Ok(equipment_menu) = equipment_menus.get_single() {
-        commands.entity(equipment_menu).despawn_recursive();
+    if let Ok(inventory_menu) = inventory_menus.get_single() {
+        commands.entity(inventory_menu).push_children(&[message_id]);
     }
 }
