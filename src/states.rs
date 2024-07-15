@@ -1,6 +1,8 @@
 use crate::ui::FONT_SIZE;
 use bevy::prelude::*;
 
+pub const PAUSE_MENU_Z_INDEX: i32 = 1;
+
 #[derive(States, Default, Debug, Clone, PartialEq, Eq, Hash)]
 pub enum GameState {
     #[default]
@@ -66,6 +68,7 @@ pub fn spawn_paused_message(mut commands: Commands) {
             ..default()
         },
         background_color: Srgba::rgb(0., 0., 1.).into(),
+        z_index: ZIndex::Local(PAUSE_MENU_Z_INDEX),
         ..default()
     };
     let message = TextBundle {
