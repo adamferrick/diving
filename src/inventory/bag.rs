@@ -1,6 +1,9 @@
 use bevy::prelude::*;
 
-use crate::states::RunningStateSet;
+use crate::inventory::inventory_menu::*;
+use crate::inventory_menu::InventoryMenu;
+use crate::states::*;
+use crate::Diver;
 
 #[derive(Component, Reflect)]
 #[reflect(Component)]
@@ -34,6 +37,10 @@ pub fn bag_plugin(app: &mut App) {
     app.add_systems(
         FixedUpdate,
         (pick_up_item, drop_item).in_set(RunningStateSet),
+    );
+    app.add_systems(
+        OnEnter(InGameMenuState::Inventory),
+        spawn_bag_menu.after(spawn_inventory_menu),
     );
     app.register_type::<Collectible>();
     app.register_type::<Collected>();
@@ -165,4 +172,55 @@ fn did_drop() {
         .resource_mut::<Events<ItemDrop>>()
         .send(ItemDrop { item: item_id });
     app.update();
+}
+
+pub fn spawn_bag_menu(
+    mut commands: Commands,
+    diver_bags: Query<&Bag, With<Diver>>,
+    names: Query<&Name>,
+    inventory_menus: Query<Entity, With<InventoryMenu>>,
+) {
+    if let Ok(bag) = diver_bags.get_single() {
+        let item_node_ids: Vec<_> = bag
+            .collectibles
+            .iter()
+            .map(|item_id| {
+                let item_name = match names.get(*item_id) {
+                    Ok(name) => name,
+                    _ => "UNNAMED ENTITY",
+                };
+                let item = TextBundle {
+                    text: Text::from_section(
+                        item_name,
+                        TextStyle {
+                            font_size: crate::FONT_SIZE,
+                            ..default()
+                        },
+                    ),
+                    ..default()
+                };
+                commands.spawn(item).id()
+            })
+            .collect();
+        let container = NodeBundle {
+            style: Style {
+                width: Val::Percent(50.),
+                height: Val::Percent(50.),
+                flex_direction: FlexDirection::Column,
+                align_self: AlignSelf::Center,
+                justify_self: JustifySelf::Center,
+                align_items: AlignItems::Center,
+                justify_content: JustifyContent::Center,
+                ..default()
+            },
+            background_color: Srgba::rgb(0., 0., 1.).into(),
+            ..default()
+        };
+        let container_id = commands.spawn(container).push_children(&item_node_ids).id();
+        if let Ok(inventory_menu) = inventory_menus.get_single() {
+            commands
+                .entity(inventory_menu)
+                .push_children(&[container_id]);
+        }
+    }
 }
