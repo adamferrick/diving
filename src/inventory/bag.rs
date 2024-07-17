@@ -205,15 +205,15 @@ pub fn spawn_bag_menu(
         let container = NodeBundle {
             style: Style {
                 width: Val::Percent(50.),
-                height: Val::Percent(50.),
+                height: Val::Percent(90.),
                 flex_direction: FlexDirection::Column,
                 align_self: AlignSelf::Center,
                 justify_self: JustifySelf::Center,
-                align_items: AlignItems::Center,
-                justify_content: JustifyContent::Center,
+                align_items: AlignItems::FlexStart,
+                padding: UiRect::all(Val::Px(20.)),
                 ..default()
             },
-            background_color: Srgba::rgb(0., 0., 1.).into(),
+            background_color: Srgba::rgb(0., 0., 0.).into(),
             ..default()
         };
         let container_id = commands.spawn(container).push_children(&item_node_ids).id();
