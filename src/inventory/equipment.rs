@@ -247,7 +247,7 @@ pub fn spawn_equipment_menu(
         background_color: Srgba::rgb(0., 0., 0.).into(),
         ..default()
     };
-    let container_id = commands.spawn(container).push_children(&[message_id]).id();
+    let container_id = commands.spawn((container, EquipmentMenu, Name::new("Equipment Menu"))).push_children(&[message_id]).id();
     if let Ok(inventory_menu) = inventory_menus.get_single() {
         commands.entity(inventory_menu).push_children(&[container_id]);
     }
