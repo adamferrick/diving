@@ -233,7 +233,22 @@ pub fn spawn_equipment_menu(
         ..default()
     };
     let message_id = commands.spawn(message).id();
+    let container = NodeBundle {
+        style: Style {
+            width: Val::Percent(50.),
+            height: Val::Percent(90.),
+            flex_direction: FlexDirection::Column,
+            align_self: AlignSelf::Center,
+            justify_self: JustifySelf::Center,
+            align_items: AlignItems::FlexStart,
+            padding: UiRect::all(Val::Px(20.)),
+            ..default()
+        },
+        background_color: Srgba::rgb(0., 0., 0.).into(),
+        ..default()
+    };
+    let container_id = commands.spawn(container).push_children(&[message_id]).id();
     if let Ok(inventory_menu) = inventory_menus.get_single() {
-        commands.entity(inventory_menu).push_children(&[message_id]);
+        commands.entity(inventory_menu).push_children(&[container_id]);
     }
 }
