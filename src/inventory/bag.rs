@@ -182,8 +182,14 @@ pub fn spawn_bag_menu(
     mut commands: Commands,
     diver_bags: Query<&Bag, With<Diver>>,
     names: Query<&Name>,
+    mut bag_menus: Query<Entity, With<BagMenu>>,
     inventory_menus: Query<Entity, With<InventoryMenu>>,
 ) {
+    for bag_menu in &mut bag_menus {
+        if let Some(mut bag_menu_commands) = commands.get_entity(bag_menu) {
+            bag_menu_commands.despawn();
+        }
+    }
     if let Ok(bag) = diver_bags.get_single() {
         let item_node_ids: Vec<_> = bag
             .collectibles

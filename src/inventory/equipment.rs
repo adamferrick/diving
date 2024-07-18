@@ -212,9 +212,15 @@ pub fn toggle_inventory(
 pub fn spawn_equipment_menu(
     mut commands: Commands,
     equipped_cylinder: Query<&EquippedTank, With<Diver>>,
+    mut equipment_menus: Query<Entity, With<EquipmentMenu>>,
     inventory_menus: Query<Entity, With<InventoryMenu>>,
     names: Query<&Name>,
 ) {
+    for equipment_menu in &mut equipment_menus {
+        if let Some(mut equipment_menu_commands) = commands.get_entity(equipment_menu) {
+            equipment_menu_commands.despawn();
+        }
+    }
     let cylinder_name = match equipped_cylinder.get_single() {
         Ok(equipped) => match names.get(equipped.0) {
             Ok(name) => name,
