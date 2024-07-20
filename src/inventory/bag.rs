@@ -226,7 +226,10 @@ pub fn spawn_bag_menu(
             background_color: Srgba::rgb(0., 0., 0.).into(),
             ..default()
         };
-        let container_id = commands.spawn((container, BagMenu, Name::new("Bag Menu"))).push_children(&item_node_ids).id();
+        let container_id = commands
+            .spawn((container, BagMenu, Name::new("Bag Menu")))
+            .push_children(&item_node_ids)
+            .id();
         if let Ok(inventory_menu) = inventory_menus.get_single() {
             commands
                 .entity(inventory_menu)

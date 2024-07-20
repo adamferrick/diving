@@ -13,17 +13,23 @@ pub struct HealthText;
 #[reflect(Component)]
 pub struct CirculationText;
 
+#[derive(Component, Reflect)]
+#[reflect(Component)]
+pub struct EquipmentText;
+
 pub fn ui_plugin(app: &mut App) {
-    app.add_systems(Startup, spawn_health_ui);
+    app.add_systems(Startup, (spawn_health_ui, spawn_equipment_ui));
     app.add_systems(
         FixedUpdate,
         (
             update_health_ui.after(damage_health),
             update_respiration_ui.after(inhalation),
+            update_equipment_ui,
         ),
     );
     app.register_type::<HealthText>();
     app.register_type::<CirculationText>();
+    app.register_type::<EquipmentText>();
 }
 
 pub fn spawn_health_ui(mut commands: Commands) {
@@ -41,7 +47,7 @@ pub fn spawn_health_ui(mut commands: Commands) {
                 background_color: Srgba::rgb(0., 0., 1.).into(),
                 ..default()
             },
-            Name::new("Ui Root"),
+            Name::new("Health Ui Root"),
         ))
         .with_children(|commands| {
             commands.spawn((
@@ -98,6 +104,57 @@ pub fn update_respiration_ui(
                     (cylinder.amount_remaining / cylinder.capacity) * 100.,
                 );
             }
+        }
+    }
+}
+
+pub fn spawn_equipment_ui(mut commands: Commands) {
+    let container = NodeBundle {
+        style: Style {
+            width: Val::Percent(100.),
+            height: Val::Percent(10.),
+            align_items: AlignItems::Center,
+            justify_content: JustifyContent::SpaceBetween,
+            align_self: AlignSelf::FlexEnd,
+            padding: UiRect::all(Val::Px(10.)),
+            ..default()
+        },
+        background_color: Srgba::rgb(0., 0., 1.).into(),
+        ..default()
+    };
+    let text_node = TextBundle {
+        text: Text::from_section(
+            "",
+            TextStyle {
+                font_size: FONT_SIZE,
+                ..default()
+            },
+        ),
+        ..default()
+    };
+    let container_id = commands
+        .spawn((container, Name::new("Equipment UI Root")))
+        .id();
+    let text_id = commands
+        .spawn((text_node, EquipmentText, Name::new("Equipment text")))
+        .id();
+    commands.entity(container_id).push_children(&[text_id]);
+}
+
+pub fn update_equipment_ui(
+    mut texts: Query<&mut Text, With<EquipmentText>>,
+    equipped_tanks: Query<&EquippedTank, With<Diver>>,
+    names: Query<&Name, With<DivingCylinder>>,
+) {
+    for mut text in &mut texts {
+        if let Ok(equipped_tank) = equipped_tanks.get_single() {
+            let cylinder_name = match names.get(equipped_tank.0) {
+                Ok(name) => name.as_str(),
+                _ => "",
+            };
+            text.sections[0].value = format!("Cylinder: {}", cylinder_name);
+        } else {
+            text.sections[0].value = "".to_string();
         }
     }
 }
