@@ -69,7 +69,10 @@ pub fn pick_up_item(
                 && bag.collectibles.len() < bag.capacity
             {
                 bag.collectibles.push(pickup.item);
-                commands.entity(item).insert(Collected(pickup.bag));
+                commands
+                    .entity(item)
+                    .insert(Collected(pickup.bag))
+                    .remove::<TransformBundle>();
             }
         }
     }
@@ -87,7 +90,10 @@ fn did_pick_up() {
             capacity: 2,
         })
         .id();
-    let item_id = app.world_mut().spawn(Collectible).id();
+    let item_id = app
+        .world_mut()
+        .spawn((Collectible, Transform::from_translation(Vec3::ZERO)))
+        .id();
     app.world_mut()
         .resource_mut::<Events<ItemPickup>>()
         .send(ItemPickup {
@@ -97,6 +103,7 @@ fn did_pick_up() {
     app.update();
     let collected = app.world().get::<Collected>(item_id).unwrap();
     assert_eq!(collected.0, bag_id);
+    assert!(app.world().get::<Transform>(item_id).is_none());
     let bag = app.world().get::<Bag>(bag_id).unwrap();
     assert_eq!(bag.collectibles[0], item_id);
     assert_eq!(bag.collectibles.len(), 1);
@@ -124,7 +131,10 @@ fn did_not_pick_up_no_capacity() {
         })
         .id();
     let item_1_id = app.world_mut().spawn(Collectible).id();
-    let item_2_id = app.world_mut().spawn(Collectible).id();
+    let item_2_id = app
+        .world_mut()
+        .spawn((Collectible, Transform::from_translation(Vec3::ZERO)))
+        .id();
     app.world_mut()
         .resource_mut::<Events<ItemPickup>>()
         .send(ItemPickup {
@@ -142,6 +152,7 @@ fn did_not_pick_up_no_capacity() {
     let bag = app.world().get::<Bag>(bag_id).unwrap();
     assert_eq!(bag.collectibles[0], item_1_id);
     assert_eq!(bag.collectibles.len(), 1);
+    assert!(app.world().get::<Transform>(item_2_id).is_some());
 }
 
 pub fn drop_item(
