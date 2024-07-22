@@ -24,7 +24,7 @@ const SPEAR_FIRE_RADIUS: f32 = 40.;
 const DIVER_INITIAL_AMMO: u32 = 3;
 const DIVER_INITIAL_BAG_SPACE: usize = 4;
 
-const DIVER_TANK_CAPACITY: f32 = 1000.;
+pub const DIVER_TANK_CAPACITY: f32 = 1000.;
 const DIVER_TANK_AMOUNT_REMAINING: f32 = 800.;
 const DIVER_TANK_OXYGEN: f32 = 0.21;
 const DIVER_TANK_NITROGEN: f32 = 0.78;
@@ -85,6 +85,7 @@ pub fn diver_plugin(app: &mut App) {
                 .after(update_position)
                 .after(crate::update_cursor),
             player_inhale.before(inhalation).after(update_position),
+            player_gather,
         )
             .in_set(RunningStateSet)
             .in_set(NoMenuStateSet),
@@ -115,7 +116,7 @@ pub fn spawn_diver(
                 proportion_of_nitrogen: DIVER_TANK_NITROGEN,
             },
             Collectible,
-            Name::new("Cylinder"),
+            Name::new("21%O2 78%N tank"),
         ))
         .id();
 
@@ -238,6 +239,23 @@ pub fn player_inhale(
             breaths.send(BreathTaken {
                 entity: diver_entity,
             });
+        }
+    }
+}
+
+pub fn player_gather(
+    mut commands: Commands,
+    buttons: Res<ButtonInput<KeyCode>>,
+    diver: Query<Entity, With<Diver>>,
+) {
+    if let Ok(diver_entity) = diver.get_single() {
+        if let Some(mut entity_commands) = commands.get_entity(diver_entity) {
+            if buttons.pressed(KeyCode::KeyG) {
+                println!("gathering");
+                entity_commands.insert(Gathering);
+            } else {
+                entity_commands.remove::<Gathering>();
+            }
         }
     }
 }

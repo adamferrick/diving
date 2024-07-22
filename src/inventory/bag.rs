@@ -24,6 +24,10 @@ pub struct Bag {
 #[reflect(Component)]
 pub struct BagMenu;
 
+#[derive(Component, Reflect)]
+#[reflect(Component)]
+pub struct Gathering;
+
 #[derive(Event)]
 pub struct ItemPickup {
     pub item: Entity,
@@ -49,6 +53,7 @@ pub fn bag_plugin(app: &mut App) {
     app.register_type::<Collectible>();
     app.register_type::<Collected>();
     app.register_type::<Bag>();
+    app.register_type::<Gathering>();
 }
 
 pub fn pick_up_item(
@@ -59,6 +64,7 @@ pub fn pick_up_item(
 ) {
     for pickup in item_pickups.read() {
         if let (Ok(item), Ok(mut bag)) = (items.get(pickup.item), bags.get_mut(pickup.bag)) {
+            println!("picking up item");
             if !bag.collectibles.iter().any(|id| *id == pickup.item)
                 && bag.collectibles.len() < bag.capacity
             {

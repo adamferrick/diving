@@ -1,9 +1,13 @@
 use crate::circulation::CirculateGas;
 use crate::states::RunningStateSet;
 use bevy::prelude::*;
+use bevy::sprite::MaterialMesh2dBundle;
 
 const AIR_O2_RATIO: f32 = 0.21;
 const AIR_N2_RATIO: f32 = 0.78;
+
+const CYLINDER_WIDTH: f32 = 10.;
+const CYLINDER_HEIGHT: f32 = 20.;
 
 #[derive(Component, Reflect)]
 #[reflect(Component)]
@@ -56,10 +60,52 @@ pub struct BreathTaken {
 
 pub fn inhalation_plugin(app: &mut App) {
     app.add_event::<BreathTaken>();
+    app.add_systems(Startup, spawn_cylinders);
     app.add_systems(FixedUpdate, inhalation.in_set(RunningStateSet));
     app.register_type::<DivingCylinder>();
     app.register_type::<BloodstreamContent>();
     app.register_type::<EquippedTank>();
+}
+
+pub fn spawn_cylinders(
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+) {
+    println!("Spawning cylinders");
+
+    let mut spawn_cylinder =
+        |x: f32, y: f32, proportion_of_oxygen: f32, proportion_of_nitrogen: f32| {
+            let mesh = Mesh::from(Rectangle::new(CYLINDER_WIDTH, CYLINDER_HEIGHT));
+            let material = ColorMaterial::from_color(Srgba::rgb(0.5, 0.5, 0.5));
+
+            let mesh_handle = meshes.add(mesh);
+            let material_handle = materials.add(material);
+
+            commands.spawn((
+                DivingCylinder {
+                    capacity: crate::diver::DIVER_TANK_CAPACITY,
+                    amount_remaining: crate::diver::DIVER_TANK_CAPACITY,
+                    proportion_of_oxygen: proportion_of_oxygen,
+                    proportion_of_nitrogen: proportion_of_nitrogen,
+                },
+                crate::collision::RectangularHitbox(Rectangle::new(CYLINDER_WIDTH, CYLINDER_HEIGHT)),
+                MaterialMesh2dBundle {
+                    mesh: mesh_handle.into(),
+                    material: material_handle,
+                    transform: Transform::from_translation(Vec3::new(x, y, 0.)),
+                    ..default()
+                },
+                crate::bag::Collectible,
+                Name::new(format!(
+                    "{}O2 {}N tank",
+                    proportion_of_oxygen, proportion_of_nitrogen
+                )),
+            ));
+        };
+
+    spawn_cylinder(100., 0., 0.5, 0.5);
+    spawn_cylinder(200., 0., 0.3, 0.7);
 }
 
 pub fn inhalation(

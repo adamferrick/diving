@@ -1,4 +1,5 @@
 use crate::health::*;
+use crate::inventory::bag::*;
 use crate::position::*;
 use crate::projectile::*;
 use crate::states::RunningStateSet;
@@ -23,6 +24,7 @@ pub fn collision_plugin(app: &mut App) {
         (
             projectile_collision.after(update_position),
             obstacle_collision.after(update_position),
+            gatherer_item_collision.after(update_position),
         )
             .in_set(RunningStateSet),
     );
@@ -226,6 +228,28 @@ pub fn projectile_collision(
                 hit_event.send(ProjectileHit {
                     projectile: projectile_entity,
                     target: target_entity,
+                });
+            }
+        }
+    }
+}
+
+pub fn gatherer_item_collision(
+    gatherers: Query<(Entity, &Transform, &RectangularHitbox), With<Gathering>>,
+    items: Query<(Entity, &Transform, &RectangularHitbox), With<Collectible>>,
+    mut item_pickup_event: EventWriter<ItemPickup>,
+) {
+    for (gatherer_entity, gatherer_transform, gatherer_hitbox) in &gatherers {
+        for (item_entity, item_transform, item_hitbox) in &items {
+            if let Some(_) = get_collision_data(
+                &gatherer_transform.translation,
+                &gatherer_hitbox,
+                &item_transform.translation,
+                &item_hitbox,
+            ) {
+                item_pickup_event.send(ItemPickup {
+                    item: item_entity,
+                    bag: gatherer_entity,
                 });
             }
         }
