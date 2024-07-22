@@ -74,35 +74,37 @@ pub fn spawn_cylinders(
 ) {
     println!("Spawning cylinders");
 
-    let mut spawn_cylinder =
-        |x: f32, y: f32, proportion_of_oxygen: f32, proportion_of_nitrogen: f32| {
-            let mesh = Mesh::from(Rectangle::new(CYLINDER_WIDTH, CYLINDER_HEIGHT));
-            let material = ColorMaterial::from_color(Srgba::rgb(0.5, 0.5, 0.5));
+    let mut spawn_cylinder = |x: f32,
+                              y: f32,
+                              proportion_of_oxygen: f32,
+                              proportion_of_nitrogen: f32| {
+        let mesh = Mesh::from(Rectangle::new(CYLINDER_WIDTH, CYLINDER_HEIGHT));
+        let material = ColorMaterial::from_color(Srgba::rgb(0.5, 0.5, 0.5));
 
-            let mesh_handle = meshes.add(mesh);
-            let material_handle = materials.add(material);
+        let mesh_handle = meshes.add(mesh);
+        let material_handle = materials.add(material);
 
-            commands.spawn((
-                DivingCylinder {
-                    capacity: crate::diver::DIVER_TANK_CAPACITY,
-                    amount_remaining: crate::diver::DIVER_TANK_CAPACITY,
-                    proportion_of_oxygen: proportion_of_oxygen,
-                    proportion_of_nitrogen: proportion_of_nitrogen,
-                },
-                crate::collision::RectangularHitbox(Rectangle::new(CYLINDER_WIDTH, CYLINDER_HEIGHT)),
-                MaterialMesh2dBundle {
-                    mesh: mesh_handle.into(),
-                    material: material_handle,
-                    transform: Transform::from_translation(Vec3::new(x, y, 0.)),
-                    ..default()
-                },
-                crate::bag::Collectible,
-                Name::new(format!(
-                    "{}O2 {}N tank",
-                    proportion_of_oxygen, proportion_of_nitrogen
-                )),
-            ));
-        };
+        commands.spawn((
+            DivingCylinder {
+                capacity: crate::diver::DIVER_TANK_CAPACITY,
+                amount_remaining: crate::diver::DIVER_TANK_CAPACITY,
+                proportion_of_oxygen: proportion_of_oxygen,
+                proportion_of_nitrogen: proportion_of_nitrogen,
+            },
+            crate::collision::RectangularHitbox(Rectangle::new(CYLINDER_WIDTH, CYLINDER_HEIGHT)),
+            MaterialMesh2dBundle {
+                mesh: mesh_handle.into(),
+                material: material_handle,
+                transform: Transform::from_translation(Vec3::new(x, y, 0.)),
+                ..default()
+            },
+            crate::bag::Collectible,
+            Name::new(format!(
+                "{}O2 {}N tank",
+                proportion_of_oxygen, proportion_of_nitrogen
+            )),
+        ));
+    };
 
     spawn_cylinder(100., 0., 0.5, 0.5);
     spawn_cylinder(200., 0., 0.3, 0.7);
