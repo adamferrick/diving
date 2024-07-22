@@ -158,15 +158,21 @@ fn did_not_pick_up_no_capacity() {
 pub fn drop_item(
     mut commands: Commands,
     items: Query<&Collected, With<Collectible>>,
-    mut bags: Query<&mut Bag>,
+    mut droppers: Query<(&mut Bag, &Transform)>,
     mut item_drops: EventReader<ItemDrop>,
 ) {
     for drop in item_drops.read() {
         if let Ok(item) = items.get(drop.item) {
-            if let Ok(mut bag) = bags.get_mut(item.0) {
-                bag.collectibles.retain(|item_id| *item_id != drop.item);
+            if let Ok((mut dropper_bag, dropper_transform)) = droppers.get_mut(item.0) {
+                dropper_bag
+                    .collectibles
+                    .retain(|item_id| *item_id != drop.item);
+                commands.entity(drop.item).remove::<Collected>().insert(
+                    TransformBundle::from_transform(Transform::from_translation(
+                        dropper_transform.translation,
+                    )),
+                );
             }
-            commands.entity(drop.item).remove::<Collected>();
         }
     }
 }
@@ -178,10 +184,13 @@ fn did_drop() {
     app.add_systems(Update, drop_item);
     let bag_id = app
         .world_mut()
-        .spawn(Bag {
-            collectibles: Vec::new(),
-            capacity: 2,
-        })
+        .spawn((
+            Bag {
+                collectibles: Vec::new(),
+                capacity: 2,
+            },
+            Transform::from_translation(Vec3::ZERO),
+        ))
         .id();
     let item_id = app.world_mut().spawn((Collectible, Collected(bag_id))).id();
     app.world_mut()
@@ -193,6 +202,12 @@ fn did_drop() {
         .resource_mut::<Events<ItemDrop>>()
         .send(ItemDrop { item: item_id });
     app.update();
+    let bag = app.world().get::<Bag>(bag_id).unwrap();
+    assert_eq!(bag.collectibles.len(), 0);
+    assert_eq!(
+        app.world().get::<Transform>(item_id).unwrap().translation,
+        Vec3::ZERO
+    );
 }
 
 pub fn spawn_bag_menu(

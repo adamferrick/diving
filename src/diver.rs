@@ -251,7 +251,6 @@ pub fn player_gather(
     if let Ok(diver_entity) = diver.get_single() {
         if let Some(mut entity_commands) = commands.get_entity(diver_entity) {
             if buttons.pressed(KeyCode::KeyG) {
-                println!("gathering");
                 entity_commands.insert(Gathering);
             } else {
                 entity_commands.remove::<Gathering>();
