@@ -1,6 +1,7 @@
 use crate::bag::*;
 use crate::collision::*;
 use crate::drag::Drag;
+use crate::equipment::EquippedCylinderJumpEvent;
 use crate::health::*;
 use crate::position::*;
 use crate::projectile::*;
@@ -86,6 +87,7 @@ pub fn diver_plugin(app: &mut App) {
                 .after(crate::update_cursor),
             player_inhale.before(inhalation).after(update_position),
             player_gather,
+            player_jump_cylinder,
         )
             .in_set(RunningStateSet)
             .in_set(NoMenuStateSet),
@@ -255,6 +257,26 @@ pub fn player_gather(
             } else {
                 entity_commands.remove::<Gathering>();
             }
+        }
+    }
+}
+
+pub fn player_jump_cylinder(
+    buttons: Res<ButtonInput<KeyCode>>,
+    diver: Query<Entity, With<Diver>>,
+    mut cylinder_jumps: EventWriter<EquippedCylinderJumpEvent>,
+) {
+    if let Ok(diver_entity) = diver.get_single() {
+        if buttons.just_pressed(KeyCode::KeyM) {
+            cylinder_jumps.send(EquippedCylinderJumpEvent {
+                i: 1,
+                wearer: diver_entity,
+            });
+        } else if buttons.just_pressed(KeyCode::KeyN) {
+            cylinder_jumps.send(EquippedCylinderJumpEvent {
+                i: -1,
+                wearer: diver_entity,
+            });
         }
     }
 }
