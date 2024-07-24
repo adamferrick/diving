@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 
+use crate::bag::Bag;
 use crate::diver::Diver;
 use crate::inhalation::*;
 use crate::inventory::inventory_menu::*;
@@ -28,12 +29,19 @@ pub struct CylinderUnequipEvent {
     pub wearer: Entity,
 }
 
+#[derive(Event)]
+pub struct EquippedCylinderJumpEvent {
+    pub i: i32,
+    pub wearer: Entity,
+}
+
 pub fn equipment_plugin(app: &mut App) {
     app.add_event::<CylinderEquipEvent>();
     app.add_event::<CylinderUnequipEvent>();
+    app.add_event::<EquippedCylinderJumpEvent>();
     app.add_systems(
         FixedUpdate,
-        (equip_cylinder, unequip_cylinder).in_set(RunningStateSet),
+        (equip_cylinder, unequip_cylinder, equipped_cylinder_jump).in_set(RunningStateSet),
     );
     app.add_systems(Update, toggle_inventory);
     app.add_systems(
@@ -193,6 +201,133 @@ fn did_unequip_cylinder() {
     assert!(wearer.is_none());
     let worn_cylinder = app.world().get::<Equipped>(cylinder_id);
     assert!(worn_cylinder.is_none());
+}
+
+pub fn equipped_cylinder_jump(
+    bags: Query<&Bag>,
+    cylinders: Query<&DivingCylinder>,
+    equipped_items: Query<&Equipped>,
+    mut jump_events: EventReader<EquippedCylinderJumpEvent>,
+    mut equip_events: EventWriter<CylinderEquipEvent>,
+) {
+    for jump_event in jump_events.read() {
+        if let Ok(bag) = bags.get(jump_event.wearer) {
+            let collected_cylinders: Vec<&Entity> = bag
+                .collectibles
+                .iter()
+                .filter(|e| cylinders.get(**e).is_ok())
+                .collect();
+            if let Some(equipped_index) = collected_cylinders
+                .iter()
+                .position(|e| equipped_items.get(**e).is_ok())
+            {
+                let new_equipped_index = (equipped_index as i32 + jump_event.i)
+                    .rem_euclid(collected_cylinders.len() as i32)
+                    as usize;
+                equip_events.send(CylinderEquipEvent {
+                    item: *collected_cylinders[new_equipped_index],
+                    wearer: jump_event.wearer,
+                });
+            } else {
+                if collected_cylinders.len() > 0 {
+                    equip_events.send(CylinderEquipEvent {
+                        item: *collected_cylinders[0],
+                        wearer: jump_event.wearer,
+                    });
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn did_jump() {
+    let mut app = App::new();
+    app.add_event::<EquippedCylinderJumpEvent>();
+    app.add_event::<CylinderEquipEvent>();
+    app.add_systems(Update, equipped_cylinder_jump);
+    let cylinder_1_id = app
+        .world_mut()
+        .spawn(DivingCylinder {
+            capacity: 0.,
+            amount_remaining: 0.,
+            proportion_of_oxygen: 0.,
+            proportion_of_nitrogen: 0.,
+        })
+        .id();
+    let cylinder_2_id = app
+        .world_mut()
+        .spawn(DivingCylinder {
+            capacity: 0.,
+            amount_remaining: 0.,
+            proportion_of_oxygen: 0.,
+            proportion_of_nitrogen: 0.,
+        })
+        .id();
+    let cylinder_3_id = app
+        .world_mut()
+        .spawn(DivingCylinder {
+            capacity: 0.,
+            amount_remaining: 0.,
+            proportion_of_oxygen: 0.,
+            proportion_of_nitrogen: 0.,
+        })
+        .id();
+    let wearer_id = app
+        .world_mut()
+        .spawn((
+            Bag {
+                collectibles: vec![cylinder_1_id, cylinder_2_id, cylinder_3_id],
+                capacity: 3,
+            },
+            EquippedTank(cylinder_1_id),
+        ))
+        .id();
+    app.world_mut()
+        .entity_mut(cylinder_1_id)
+        .insert(Equipped(wearer_id));
+    // should jump forwards from cylinder 1 to cylinder 2
+    app.world_mut()
+        .resource_mut::<Events<EquippedCylinderJumpEvent>>()
+        .send(EquippedCylinderJumpEvent {
+            i: 1,
+            wearer: wearer_id,
+        });
+    app.update();
+    let equip_events = app.world().resource::<Events<CylinderEquipEvent>>();
+    let mut equip_reader = equip_events.get_reader();
+    let equip_cylinder = equip_reader.read(equip_events).next().unwrap();
+    assert_eq!(equip_cylinder.item, cylinder_2_id);
+    // should jump backwards from cylinder 1 to cylinder 3
+    app.world_mut()
+        .resource_mut::<Events<CylinderEquipEvent>>()
+        .clear();
+    app.world_mut()
+        .resource_mut::<Events<EquippedCylinderJumpEvent>>()
+        .send(EquippedCylinderJumpEvent {
+            i: -1,
+            wearer: wearer_id,
+        });
+    app.update();
+    let equip_events = app.world().resource::<Events<CylinderEquipEvent>>();
+    let mut equip_reader = equip_events.get_reader();
+    let equip_cylinder = equip_reader.read(equip_events).next().unwrap();
+    assert_eq!(equip_cylinder.item, cylinder_3_id);
+    // should jump forwards enough to wrap back around to cylinder 1
+    app.world_mut()
+        .resource_mut::<Events<CylinderEquipEvent>>()
+        .clear();
+    app.world_mut()
+        .resource_mut::<Events<EquippedCylinderJumpEvent>>()
+        .send(EquippedCylinderJumpEvent {
+            i: 3,
+            wearer: wearer_id,
+        });
+    app.update();
+    let equip_events = app.world().resource::<Events<CylinderEquipEvent>>();
+    let mut equip_reader = equip_events.get_reader();
+    let equip_cylinder = equip_reader.read(equip_events).next().unwrap();
+    assert_eq!(equip_cylinder.item, cylinder_1_id);
 }
 
 pub fn toggle_inventory(
