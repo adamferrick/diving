@@ -6,8 +6,8 @@ use crate::states::RunningStateSet;
 use bevy::prelude::*;
 use bevy::sprite::MaterialMesh2dBundle;
 
-const OBSTACLE_WIDTH: f32 = 400.;
-const OBSTACLE_HEIGHT: f32 = 100.;
+const OBSTACLE_WIDTH: f32 = 40.;
+const OBSTACLE_HEIGHT: f32 = 10.;
 
 #[derive(Component, Reflect)]
 #[reflect(Component)]
@@ -51,10 +51,11 @@ pub fn spawn_obstacles(
         MaterialMesh2dBundle {
             mesh: mesh_handle.into(),
             material: material_handle,
-            transform: Transform::from_translation(Vec3::new(100., 100., 0.)),
+            transform: Transform::from_translation(Vec3::new(0., 20., 0.)),
             ..default()
         },
         Name::new("Obstacle"),
+        crate::PIXEL_PERFECT_LAYERS,
     ));
 }
 

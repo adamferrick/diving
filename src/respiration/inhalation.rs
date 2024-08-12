@@ -6,8 +6,8 @@ use bevy::sprite::MaterialMesh2dBundle;
 const AIR_O2_RATIO: f32 = 0.21;
 const AIR_N2_RATIO: f32 = 0.78;
 
-const CYLINDER_WIDTH: f32 = 10.;
-const CYLINDER_HEIGHT: f32 = 20.;
+const CYLINDER_WIDTH: f32 = 2.;
+const CYLINDER_HEIGHT: f32 = 4.;
 
 #[derive(Component, Reflect)]
 #[reflect(Component)]
@@ -103,11 +103,12 @@ pub fn spawn_cylinders(
                 "{}O2 {}N tank",
                 proportion_of_oxygen, proportion_of_nitrogen
             )),
+            crate::PIXEL_PERFECT_LAYERS,
         ));
     };
 
-    spawn_cylinder(100., 0., 0.5, 0.5);
-    spawn_cylinder(200., 0., 0.3, 0.7);
+    spawn_cylinder(30., 0., 0.5, 0.5);
+    spawn_cylinder(70., 0., 0.3, 0.7);
 }
 
 pub fn inhalation(

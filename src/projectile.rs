@@ -98,6 +98,7 @@ pub fn fire_projectile(
                     transform: Transform::from_translation(fire_event.translation),
                     ..default()
                 },
+                crate::PIXEL_PERFECT_LAYERS,
             ));
         }
     }

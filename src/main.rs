@@ -30,7 +30,7 @@ pub struct CursorPosition(Vec2);
 fn main() {
     App::new()
         .add_plugins((
-            DefaultPlugins,
+            DefaultPlugins.set(ImagePlugin::default_nearest()),
             WorldInspectorPlugin::new(),
             health_plugin,
             diver_plugin,
@@ -51,7 +51,7 @@ fn main() {
 fn update_cursor(
     mut cursor_position: ResMut<CursorPosition>,
     window_query: Query<&Window, With<PrimaryWindow>>,
-    camera_query: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
+    camera_query: Query<(&Camera, &GlobalTransform), With<OuterCamera>>,
 ) {
     let (camera, camera_transform) = camera_query.single();
     let window = window_query.single();

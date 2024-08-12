@@ -12,15 +12,15 @@ use crate::CursorPosition;
 use bevy::prelude::*;
 use bevy::sprite::MaterialMesh2dBundle;
 
-const DIVER_SPEED: f32 = 1.;
+const DIVER_SPEED: f32 = 0.5;
 const DIVER_DRAG: f32 = 0.9;
-const DIVER_WIDTH: f32 = 20.;
-const DIVER_HEIGHT: f32 = 20.;
+const DIVER_WIDTH: f32 = 8.;
+const DIVER_HEIGHT: f32 = 8.;
 
 const SPEAR_SIZE: f32 = 5.;
-const SPEAR_INITIAL_VELOCITY: f32 = 5.;
+const SPEAR_INITIAL_VELOCITY: f32 = 1.5;
 const SPEAR_DAMAGE: f32 = 40.;
-const SPEAR_FIRE_RADIUS: f32 = 40.;
+const SPEAR_FIRE_RADIUS: f32 = 10.;
 
 const DIVER_INITIAL_AMMO: u32 = 3;
 const DIVER_INITIAL_BAG_SPACE: usize = 4;
@@ -144,6 +144,7 @@ pub fn spawn_diver(
                 ..default()
             },
             Name::new("Diver"),
+            crate::PIXEL_PERFECT_LAYERS,
         ))
         .id();
     commands.entity(ammo_id).insert(Collected(diver_id));

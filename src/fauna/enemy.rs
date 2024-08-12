@@ -9,9 +9,9 @@ use crate::Dead;
 use crate::Diver;
 use crate::Health;
 
-const ENEMY_SPEED: f32 = 1.1;
-const ENEMY_WIDTH: f32 = 20.;
-const ENEMY_HEIGHT: f32 = 20.;
+const ENEMY_SPEED: f32 = 0.6;
+const ENEMY_WIDTH: f32 = 8.;
+const ENEMY_HEIGHT: f32 = 8.;
 const ENEMY_HEALTH: f32 = 40.;
 const ENEMY_DRAG: f32 = 0.99;
 
@@ -65,6 +65,7 @@ pub fn spawn_enemies(
                 ..default()
             },
             Name::new("Enemy"),
+            crate::PIXEL_PERFECT_LAYERS,
         ));
     };
 
