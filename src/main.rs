@@ -1,3 +1,4 @@
+use crate::camera::*;
 use crate::diver::*;
 use crate::fauna::*;
 use crate::health::*;
@@ -7,11 +8,11 @@ use crate::projectile::*;
 use crate::respiration::*;
 use crate::states::*;
 use crate::ui::*;
-use crate::camera::*;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
+pub mod camera;
 pub mod diver;
 pub mod fauna;
 pub mod health;
@@ -21,7 +22,6 @@ pub mod projectile;
 pub mod respiration;
 pub mod states;
 pub mod ui;
-pub mod camera;
 
 #[derive(Resource, Default, Reflect)]
 #[reflect(Resource)]
