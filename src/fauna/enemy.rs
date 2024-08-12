@@ -102,7 +102,10 @@ fn did_seek_diver() {
         .spawn((Transform::from_translation(Vec3::new(1., 1., 0.)), Diver));
     app.update();
     let enemy_velocity = app.world().get::<Velocity>(enemy_id).unwrap();
-    assert_eq!(enemy_velocity.0, Vec3::new(1., 1., 0.).normalize() * 1.1);
+    assert_eq!(
+        enemy_velocity.0,
+        Vec3::new(1., 1., 0.).normalize() * ENEMY_SPEED
+    );
 }
 
 #[test]
