@@ -7,6 +7,7 @@ use crate::projectile::*;
 use crate::respiration::*;
 use crate::states::*;
 use crate::ui::*;
+use crate::camera::*;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
@@ -20,14 +21,11 @@ pub mod projectile;
 pub mod respiration;
 pub mod states;
 pub mod ui;
+pub mod camera;
 
 #[derive(Resource, Default, Reflect)]
 #[reflect(Resource)]
 pub struct CursorPosition(Vec2);
-
-#[derive(Component, Reflect)]
-#[reflect(Component)]
-struct MainCamera;
 
 fn main() {
     App::new()
@@ -43,15 +41,11 @@ fn main() {
             states_plugin,
             fauna_plugin,
             ui_plugin,
+            camera_plugin,
         ))
         .init_resource::<CursorPosition>()
-        .add_systems(Startup, spawn_camera)
         .add_systems(FixedUpdate, (update_cursor,))
         .run();
-}
-
-fn spawn_camera(mut commands: Commands) {
-    commands.spawn((Camera2dBundle::default(), MainCamera));
 }
 
 fn update_cursor(
