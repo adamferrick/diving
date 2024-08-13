@@ -40,6 +40,13 @@ pub fn states_plugin(app: &mut App) {
             NoMenuStateSet.run_if(in_state(InGameMenuState::NoMenu)),
         ),
     );
+    app.configure_sets(
+        Update,
+        (
+            RunningStateSet.run_if(in_state(GameState::Running)),
+            NoMenuStateSet.run_if(in_state(InGameMenuState::NoMenu)),
+        ),
+    );
     app.register_type::<PauseMenu>();
 }
 

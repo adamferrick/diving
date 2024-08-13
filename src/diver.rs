@@ -78,7 +78,7 @@ impl DiverBundle {
 pub fn diver_plugin(app: &mut App) {
     app.add_systems(Startup, spawn_diver);
     app.add_systems(
-        FixedUpdate,
+        Update,
         (
             player_control_velocity.before(update_position),
             fire_speargun
