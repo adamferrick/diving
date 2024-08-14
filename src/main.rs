@@ -1,3 +1,4 @@
+use crate::animation::*;
 use crate::camera::*;
 use crate::diver::*;
 use crate::fauna::*;
@@ -12,6 +13,7 @@ use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
+pub mod animation;
 pub mod camera;
 pub mod diver;
 pub mod fauna;
@@ -32,6 +34,7 @@ fn main() {
         .add_plugins((
             DefaultPlugins.set(ImagePlugin::default_nearest()),
             WorldInspectorPlugin::new(),
+            animation_plugin,
             health_plugin,
             diver_plugin,
             physics_plugin,

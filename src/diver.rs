@@ -1,3 +1,4 @@
+use crate::animation::*;
 use crate::bag::*;
 use crate::collision::*;
 use crate::drag::Drag;
@@ -10,12 +11,12 @@ use crate::states::*;
 use crate::BreatherBundle;
 use crate::CursorPosition;
 use bevy::prelude::*;
-use bevy::sprite::MaterialMesh2dBundle;
 
 const DIVER_SPEED: f32 = 0.5;
 const DIVER_DRAG: f32 = 0.9;
-const DIVER_WIDTH: f32 = 8.;
-const DIVER_HEIGHT: f32 = 8.;
+const DIVER_WIDTH: f32 = 5.;
+const DIVER_HEIGHT: f32 = 13.;
+const DIVER_ANIMATION_SPEED: f32 = 0.5;
 
 const SPEAR_SIZE: f32 = 5.;
 const SPEAR_INITIAL_VELOCITY: f32 = 1.5;
@@ -98,16 +99,10 @@ pub fn diver_plugin(app: &mut App) {
 
 pub fn spawn_diver(
     mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
+    asset_server: Res<AssetServer>,
+    mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
 ) {
     println!("Spawning diver...");
-
-    let mesh = Mesh::from(Rectangle::new(DIVER_WIDTH, DIVER_HEIGHT));
-    let material = ColorMaterial::from_color(Srgba::rgb(0., 1., 0.));
-
-    let mesh_handle = meshes.add(mesh);
-    let material_handle = materials.add(material);
 
     let cylinder_id = commands
         .spawn((
@@ -130,6 +125,10 @@ pub fn spawn_diver(
         ))
         .id();
 
+    let texture = asset_server.load("diver.png");
+    let layout = TextureAtlasLayout::from_grid(UVec2::new(5, 13), 2, 1, None, None);
+    let texture_atlas_layout = texture_atlas_layouts.add(layout);
+    let animation_indices = AnimationIndices { first: 0, last: 1 };
     let diver_id = commands
         .spawn((
             DiverBundle::new(cylinder_id, ammo_id),
@@ -137,13 +136,21 @@ pub fn spawn_diver(
                 collectibles: vec![cylinder_id, ammo_id],
                 capacity: DIVER_INITIAL_BAG_SPACE,
             },
-            MaterialMesh2dBundle {
-                mesh: mesh_handle.into(),
-                material: material_handle,
-                transform: Transform::from_translation(Vec3::new(0., 0., 0.)),
+            SpriteBundle {
+                transform: Transform::from_translation(Vec3::ZERO),
+                texture,
                 ..default()
             },
             Name::new("Diver"),
+            TextureAtlas {
+                layout: texture_atlas_layout,
+                index: animation_indices.first,
+            },
+            animation_indices,
+            AnimationTimer(Timer::from_seconds(
+                DIVER_ANIMATION_SPEED,
+                TimerMode::Repeating,
+            )),
             crate::PIXEL_PERFECT_LAYERS,
         ))
         .id();
