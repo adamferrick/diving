@@ -4,6 +4,7 @@ use crate::diver::*;
 use crate::fauna::*;
 use crate::health::*;
 use crate::inventory::*;
+use crate::loading::*;
 use crate::physics::*;
 use crate::projectile::*;
 use crate::respiration::*;
@@ -19,6 +20,7 @@ pub mod diver;
 pub mod fauna;
 pub mod health;
 pub mod inventory;
+pub mod loading;
 pub mod physics;
 pub mod projectile;
 pub mod respiration;
@@ -35,6 +37,7 @@ fn main() {
             DefaultPlugins.set(ImagePlugin::default_nearest()),
             WorldInspectorPlugin::new(),
             animation_plugin,
+            loading_plugin,
             health_plugin,
             diver_plugin,
             physics_plugin,
