@@ -50,6 +50,7 @@ fn main() {
             camera_plugin,
         ))
         .init_resource::<CursorPosition>()
+        .register_type::<CursorPosition>()
         .add_systems(FixedUpdate, (update_cursor,))
         .run();
 }
