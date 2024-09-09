@@ -10,6 +10,7 @@ use crate::respiration::inhalation::*;
 use crate::states::*;
 use crate::BreatherBundle;
 use crate::CursorPosition;
+use crate::Spritesheets;
 use bevy::prelude::*;
 
 const DIVER_SPEED: f32 = 0.5;
@@ -77,7 +78,7 @@ impl DiverBundle {
 }
 
 pub fn diver_plugin(app: &mut App) {
-    app.add_systems(Startup, spawn_diver);
+    app.add_systems(Startup, spawn_diver.after(crate::load_assets));
     app.add_systems(
         Update,
         (
@@ -97,11 +98,7 @@ pub fn diver_plugin(app: &mut App) {
     app.register_type::<EquippedAmmo>();
 }
 
-pub fn spawn_diver(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
-) {
+pub fn spawn_diver(mut commands: Commands, spritesheets: Res<Spritesheets>) {
     println!("Spawning diver...");
 
     let cylinder_id = commands
@@ -125,9 +122,12 @@ pub fn spawn_diver(
         ))
         .id();
 
+    /*
     let texture = asset_server.load("diver.png");
     let layout = TextureAtlasLayout::from_grid(UVec2::new(6, 14), 2, 1, None, None);
     let texture_atlas_layout = texture_atlas_layouts.add(layout);
+    */
+    let (texture, layout) = spritesheets.0.get("diver.png").unwrap();
     let animation_indices = AnimationIndices { first: 0, last: 1 };
     let diver_id = commands
         .spawn((
@@ -138,12 +138,12 @@ pub fn spawn_diver(
             },
             SpriteBundle {
                 transform: Transform::from_translation(Vec3::ZERO),
-                texture,
+                texture: texture.clone(),
                 ..default()
             },
             Name::new("Diver"),
             TextureAtlas {
-                layout: texture_atlas_layout,
+                layout: layout.clone(),
                 index: animation_indices.first,
             },
             animation_indices,
