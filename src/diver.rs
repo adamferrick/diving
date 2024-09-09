@@ -43,6 +43,10 @@ pub struct Diver;
 #[reflect(Component)]
 pub struct EquippedAmmo(pub Entity);
 
+#[derive(Component, Reflect)]
+#[reflect(Component)]
+pub struct Swimming(pub Vec3);
+
 #[derive(Bundle)]
 pub struct DiverBundle {
     diver: Diver,
@@ -52,6 +56,7 @@ pub struct DiverBundle {
     drag: Drag,
     equipped_tank: EquippedTank,
     equipped_ammo: EquippedAmmo,
+    swimming: Swimming,
     breather_bundle: BreatherBundle,
 }
 
@@ -65,6 +70,7 @@ impl DiverBundle {
             drag: Drag(DIVER_DRAG),
             equipped_tank: EquippedTank(tank),
             equipped_ammo: EquippedAmmo(ammo),
+            swimming: Swimming(Vec3::ZERO),
             breather_bundle: BreatherBundle {
                 bloodstream_content: BloodstreamContent {
                     capacity: DIVER_BLOODSTREAM_CAPACITY,
@@ -82,7 +88,7 @@ pub fn diver_plugin(app: &mut App) {
     app.add_systems(
         Update,
         (
-            player_control_velocity.before(update_position),
+            player_control_swim.before(set_velocity_of_swimmer),
             fire_speargun
                 .before(fire_projectile)
                 .after(update_position)
@@ -94,8 +100,10 @@ pub fn diver_plugin(app: &mut App) {
             .in_set(RunningStateSet)
             .in_set(NoMenuStateSet),
     );
+    app.add_systems(FixedUpdate, set_velocity_of_swimmer.before(update_position));
     app.register_type::<Diver>();
     app.register_type::<EquippedAmmo>();
+    app.register_type::<Swimming>();
 }
 
 pub fn spawn_diver(mut commands: Commands, spritesheets: Res<Spritesheets>) {
@@ -122,11 +130,6 @@ pub fn spawn_diver(mut commands: Commands, spritesheets: Res<Spritesheets>) {
         ))
         .id();
 
-    /*
-    let texture = asset_server.load("diver.png");
-    let layout = TextureAtlasLayout::from_grid(UVec2::new(6, 14), 2, 1, None, None);
-    let texture_atlas_layout = texture_atlas_layouts.add(layout);
-    */
     let (texture, layout) = spritesheets.0.get("diver.png").unwrap();
     let animation_indices = AnimationIndices { first: 0, last: 1 };
     let diver_id = commands
@@ -158,23 +161,63 @@ pub fn spawn_diver(mut commands: Commands, spritesheets: Res<Spritesheets>) {
     commands.entity(cylinder_id).insert(Collected(diver_id));
 }
 
-pub fn player_control_velocity(
+pub fn player_control_swim(
     buttons: Res<ButtonInput<KeyCode>>,
-    mut diver: Query<&mut Velocity, With<Diver>>,
+    mut diver: Query<&mut Swimming, With<Diver>>,
 ) {
-    if let Ok(mut velocity) = diver.get_single_mut() {
-        if buttons.pressed(KeyCode::ArrowUp) {
-            velocity.0.y = DIVER_SPEED;
+    if let Ok(mut swimming) = diver.get_single_mut() {
+        let vertical = if buttons.pressed(KeyCode::ArrowUp) {
+            Vec3::new(0., DIVER_SPEED, 0.)
         } else if buttons.pressed(KeyCode::ArrowDown) {
-            velocity.0.y = -DIVER_SPEED;
-        }
+            Vec3::new(0., -DIVER_SPEED, 0.)
+        } else {
+            Vec3::ZERO
+        };
 
-        if buttons.pressed(KeyCode::ArrowLeft) {
-            velocity.0.x = -DIVER_SPEED;
+        let horizontal = if buttons.pressed(KeyCode::ArrowLeft) {
+            Vec3::new(-DIVER_SPEED, 0., 0.)
         } else if buttons.pressed(KeyCode::ArrowRight) {
-            velocity.0.x = DIVER_SPEED;
+            Vec3::new(DIVER_SPEED, 0., 0.)
+        } else {
+            Vec3::ZERO
+        };
+
+        *swimming = Swimming((horizontal + vertical).normalize_or_zero() * DIVER_SPEED);
+    }
+}
+
+pub fn set_velocity_of_swimmer(mut swimmers: Query<(&mut Velocity, &Swimming)>) {
+    for (mut velocity, swimming) in &mut swimmers {
+        if swimming.0 != Vec3::ZERO {
+            velocity.0 = swimming.0;
         }
     }
+}
+
+#[test]
+fn did_set_velocity() {
+    let mut app = App::new();
+    app.add_systems(Update, set_velocity_of_swimmer);
+    let swimmer_id = app
+        .world_mut()
+        .spawn((Velocity(Vec3::ZERO), Swimming(Vec3::new(1., 1., 0.))))
+        .id();
+    app.update();
+    let new_velocity = app.world().get::<Velocity>(swimmer_id).unwrap();
+    assert_eq!(new_velocity.0, Vec3::new(1., 1., 0.));
+}
+
+#[test]
+fn did_not_set_velocity() {
+    let mut app = App::new();
+    app.add_systems(Update, set_velocity_of_swimmer);
+    let swimmer_id = app
+        .world_mut()
+        .spawn((Velocity(Vec3::new(1., 1., 0.)), Swimming(Vec3::ZERO)))
+        .id();
+    app.update();
+    let new_velocity = app.world().get::<Velocity>(swimmer_id).unwrap();
+    assert_eq!(new_velocity.0, Vec3::new(1., 1., 0.));
 }
 
 pub fn fire_speargun(
